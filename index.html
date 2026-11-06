@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="ar" dir="rtl">
+<html lang="ar" dir="rtl" class="ro">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -258,6 +258,9 @@ input:focus,select:focus,textarea:focus{border-color:var(--primary);outline:none
   .paper table{page-break-inside:auto}
   .paper tr{page-break-inside:avoid}
 }
+/* View-only public copy */
+html.ro [data-act^="add-"],html.ro [data-act^="edit-"],html.ro [data-act="close-action"],html.ro [data-act="reset-demo"],
+html.ro [data-act="delete-rec"],html.ro [data-act="wa-log"],html.ro .btn.wa,html.ro .btn[disabled][title]{display:none!important}
 </style>
 </head>
 <body>
@@ -298,6 +301,7 @@ input:focus,select:focus,textarea:focus{border-color:var(--primary);outline:none
 (function(){
 "use strict";
 
+const READONLY = true;
 /* ---------- helpers ---------- */
 const $ = (s, r=document) => r.querySelector(s);
 const $$ = (s, r=document) => Array.from(r.querySelectorAll(s));
@@ -466,6 +470,7 @@ function lsWrite(){ try { localStorage.setItem(LS_KEY, JSON.stringify(state)); s
 
 function setMode(mode){ store.mode = mode; renderStoreChip(); if(ui.route==="home") { const n = $("#storageNote"); if(n) n.outerHTML = storageNoteHTML(); } }
 function storeText(){
+  if(READONLY) return {short:"للعرض فقط", long:"هذه نسخة للعرض فقط. لا يمكن إضافة أو تعديل أي بيانات من هذا الرابط."};
   if(store.checking && store.mode!=="account") return {short:"جارٍ التحقق من الحفظ…", long:"جارٍ التحقق من مكان حفظ البيانات."};
   if(store.mode==="account") return {short:"محفوظ في حسابك", long:"التعديلات محفوظة في مساحتك الشخصية الخاصة بهذا العمل في Claude، وتبقى بعد إغلاق الصفحة وإعادة فتحها، ولا يراها غيرك."};
   if(store.mode==="browser") return {short:"محفوظ في هذا المتصفح", long:"التعديلات محفوظة في هذا المتصفح على هذا الجهاز فقط، وتبقى بعد إعادة الفتح ما لم تُمسح بيانات المتصفح. لن تظهر على جهاز آخر."};
@@ -476,7 +481,7 @@ function renderStoreChip(){
   $("#storeChipText").textContent = storeText().short;
   c.title = storeText().long;
 }
-function save(){
+function save(){ if(READONLY) return;
   state.updatedAt = Date.now();
   if(store.mode !== "memory" || store.lsOk) lsWrite();
   if(store.mode === "account" && store.ref){
@@ -618,6 +623,7 @@ const ICON = {
 
 /* ---------- Home ---------- */
 function storageNoteHTML(){
+  if(READONLY) return '<div class="storage-note" id="storageNote"><div class="grow"><b>نسخة للعرض فقط</b><br><span class="muted">يمكنك تصفح الطلاب والخطط والتقارير وطباعتها، لكن لا يمكن إضافة أو تعديل أي بيانات من هذا الرابط.</span></div></div>';
   const t = storeText();
   return '<div class="storage-note" id="storageNote"><div class="grow"><b>هل تبقى التعديلات؟</b><br><span class="muted">'+esc(t.long)+'</span></div>'+
     '<button class="btn sm" data-act="reset-demo">إعادة البيانات الوهمية</button></div>';
@@ -978,8 +984,8 @@ function viewReport(){
   return `
   <div class="no-print">
     <div class="hero" style="margin-bottom:6px"><div><h1>تقرير الطالب</h1><p class="lede">اختر الطالب والفترة، ثم اطبع التقرير أو نزّله.</p></div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn primary" data-act="print">${ICON.print}طباعة وإرسال لولي الأمر</button>${waNumber(s.phone) ? `<a class="btn wa" href="${esc(waURL(s))}" target="_blank" rel="noopener" data-act="wa-log" data-sid="${s.id}">${ICON.wa}واتساب فقط</a>` : `<button class="btn" disabled title="لا يوجد رقم لولي الأمر">${ICON.wa}لا يوجد رقم واتساب</button>`}<button class="btn" data-act="download-report" id="dlBtn">${ICON.down}تنزيل نسخة HTML</button></div></div>
-    <p class="muted" style="font-size:13px;margin:0 0 10px">بعد الطباعة يفتح واتساب برسالة جاهزة لولي الأمر (${esc(s.guardian||"—")} · <bdi dir="ltr">${esc(s.phone||"—")}</bdi>)، وتضغط أنت «إرسال». الإرسال التلقائي بدون ضغطة غير ممكن من صفحة ويب.</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn primary" data-act="print">${ICON.print}${READONLY ? "طباعة" : "طباعة وإرسال لولي الأمر"}</button>${waNumber(s.phone) ? `<a class="btn wa" href="${esc(waURL(s))}" target="_blank" rel="noopener" data-act="wa-log" data-sid="${s.id}">${ICON.wa}واتساب فقط</a>` : `<button class="btn" disabled title="لا يوجد رقم لولي الأمر">${ICON.wa}لا يوجد رقم واتساب</button>`}<button class="btn" data-act="download-report" id="dlBtn">${ICON.down}تنزيل نسخة HTML</button></div></div>
+    <p class="muted" style="font-size:13px;margin:0 0 10px"${READONLY ? " hidden" : ""}>بعد الطباعة يفتح واتساب برسالة جاهزة لولي الأمر (${esc(s.guardian||"—")} · <bdi dir="ltr">${esc(s.phone||"—")}</bdi>)، وتضغط أنت «إرسال». الإرسال التلقائي بدون ضغطة غير ممكن من صفحة ويب.</p>
     <div class="rep-controls">
       <div class="field s"><label for="rs">الطالب</label><select id="rs">${state.students.map(x => `<option value="${x.id}" ${x.id===r.sid?"selected":""}>${esc(x.name)} (${esc(x.schoolNo)})</option>`).join("")}</select></div>
       <div class="field"><label for="rf">من</label><input type="date" id="rf" value="${r.from}" max="${r.to}"></div>
@@ -990,7 +996,7 @@ function viewReport(){
       <button class="btn sm" data-act="preset" data-d="30">آخر 30 يومًا</button>
       <button class="btn sm" data-act="preset" data-d="plan">منذ بداية الخطة</button>
     </div>
-    <p class="muted" style="font-size:13px" id="printHint">إن لم تظهر نافذة الطباعة داخل Claude، افتح العمل في صفحته الكاملة ثم اطبع${''}، أو استخدم زر التنزيل إن ظهر.</p>
+    <p class="muted" style="font-size:13px" id="printHint"${READONLY ? " hidden" : ""}>إن لم تظهر نافذة الطباعة داخل Claude، افتح العمل في صفحته الكاملة ثم اطبع${''}، أو استخدم زر التنزيل إن ظهر.</p>
   </div>
   ${reportHTML(s, r.from, r.to)}`;
 }
@@ -1186,6 +1192,7 @@ function toast(msg, action){
 /* ---------- events ---------- */
 document.addEventListener("click", e => {
   const t = e.target.closest("[data-act]"); if(!t) return;
+  if(READONLY && !["scrim","close-modal","tab","beh-filter","clear-filters","preset","print","download-report"].includes(t.dataset.act)) { e.preventDefault(); return; }
   const a = t.dataset.act, s = t.dataset.sid ? stu(t.dataset.sid) : null;
   switch(a){
     case "scrim": if(e.target === t) closeModal(); break;
@@ -1212,7 +1219,7 @@ document.addEventListener("click", e => {
     case "preset": { const d = t.dataset.d; ui.report.to = today(); ui.report.from = d === "plan" ? stu(ui.report.sid).iep.start : addDays(today(), -Number(d)); render(); break; }
     case "print": { try { window.print(); } catch(err){ toast("الطباعة غير متاحة في هذا العرض. افتح الصفحة كاملة ثم اطبع."); break; }
       const rs = stu(ui.report.sid);
-      if(rs && waNumber(rs.phone)) setTimeout(() => toast("هل ترسل ملخص التقرير لولي الأمر على واتساب؟", {label:"إرسال على واتساب", fn:() => sendWa(rs)}), 300);
+      if(!READONLY && rs && waNumber(rs.phone)) setTimeout(() => toast("هل ترسل ملخص التقرير لولي الأمر على واتساب؟", {label:"إرسال على واتساب", fn:() => sendWa(rs)}), 300);
       break; }
     case "wa-log": logWa(s); toast("فُتح واتساب برسالة جاهزة، وسُجّل التواصل في ملف الطالب."); break;
     case "download-report": downloadReport(t); break;
@@ -1271,14 +1278,14 @@ async function downloadReport(btn){
 }
 
 /* ---------- boot ---------- */
-state = lsRead();
+state = READONLY ? null : lsRead();
 if(!state || !state.students){ state = seed(); } else migrate(state);
-store.mode = store.lsOk ? "browser" : "memory";
-if(store.lsOk) lsWrite();
+store.mode = store.lsOk ? "browser" : "memory"; if(READONLY){ store.checking = false; }
+if(store.lsOk && !READONLY) lsWrite();
 Object.assign(ui, parseHash()); if(ui.sid && ui.route==="report") ui.report.sid = ui.sid;
 renderStoreChip();
 render();
-connectAccountStorage();
+if(!READONLY) connectAccountStorage();
 initDownloads();
 window.__athar = { get state(){ return state; }, store, ui };
 })();
