@@ -1,8 +1,19 @@
 <!doctype html>
-<html lang="ar" dir="rtl" class="ro">
+<html lang="ar" dir="rtl">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<script>
+/* ======================================================================
+   إعداد الاتصال بقاعدة البيانات — عدّل السطرين التاليين فقط
+   من Supabase: Project Settings ← API ← Project URL و anon public key
+   ====================================================================== */
+window.ATHAR_CONFIG = {
+  url: "https://rulkaebkxljqqnzqzplj.supabase.co",
+  anonKey: "sb_publishable_cW0FlrvotG4W6kD4woPUaA_8VBnfUa4"
+};
+</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script>
 <title>أثر | متابعة أصحاب الهمم</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -249,6 +260,118 @@ input:focus,select:focus,textarea:focus{border-color:var(--primary);outline:none
 .storage-note{font-size:13.5px;border:1px solid var(--line);border-radius:var(--r-md);padding:12px 14px;background:var(--surface);margin-top:22px;display:flex;gap:12px;align-items:flex-start;flex-wrap:wrap}
 .storage-note .grow{flex:1;min-width:220px}
 
+/* Worksheets */
+.wsgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
+.wscard{display:flex;flex-direction:column;gap:10px}
+.wscard-top{display:flex;gap:12px;align-items:flex-start}
+.wscard h3{margin:2px 0}
+.wsthumb{width:60px;height:76px;border-radius:var(--r-sm);background:var(--surface-2);border:1px solid var(--line);display:grid;place-items:center;color:var(--muted);overflow:hidden;flex:none}
+.wsthumb img{width:100%;height:100%;object-fit:cover}
+.wsthumb svg{width:26px;height:26px}
+.wsact{display:flex;gap:6px;flex-wrap:wrap;margin-top:auto}
+.wsres{list-style:none;margin:0;padding:0;font-size:13.5px}
+.wsres li{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:5px 0;border-top:1px dashed var(--line)}
+.qed{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:14px;margin-bottom:12px}
+.qed.has-err{border-color:var(--bad)}
+.qed-h{display:flex;gap:6px;align-items:center;flex-wrap:wrap;margin-bottom:8px}
+.qed-h .sp{flex:1}
+.qed .err{font-size:13px;color:var(--bad);font-weight:600}
+.optrow{display:flex;gap:8px;align-items:center;margin-top:6px}
+.optrow .ltr{width:24px;text-align:center;font-weight:700;color:var(--muted);flex:none}
+.optrow > input[type=text]{flex:1;min-width:0}
+.okl{display:inline-flex;align-items:center;gap:5px;font-size:13.5px;white-space:nowrap;font-weight:600;cursor:pointer}
+.okl input{width:18px;height:18px;accent-color:var(--pos)}
+.tfrow{display:flex;gap:18px;margin-top:8px}
+.imgs{display:flex;gap:10px;flex-wrap:wrap;margin-top:10px}
+.imgs figure{margin:0;position:relative}
+.imgs img{display:block;width:110px;height:140px;object-fit:cover;border-radius:var(--r-sm);border:1px solid var(--line);background:var(--surface-2)}
+.imgs figure .btn{position:absolute;top:4px;inset-inline-end:4px;min-height:30px;padding:2px 8px}
+.edit-bar{position:sticky;bottom:calc(70px + env(safe-area-inset-bottom,0px));z-index:5;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:10px;display:flex;gap:8px;flex-wrap:wrap;margin-top:16px;box-shadow:0 6px 24px rgba(0,0,0,.12)}
+@media (min-width:761px){.edit-bar{bottom:12px}}
+.errbox{background:var(--bad-bg);color:var(--bad);border-radius:var(--r-md);padding:10px 14px;margin-bottom:12px;font-weight:600}
+.errbox ul{margin:4px 0 0;padding-inline-start:20px;font-weight:500}
+.steps{margin:10px 0;padding-inline-start:22px}
+.steps li{margin-bottom:4px}
+.solve-bar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;background:var(--due-bg);color:var(--ink);border-radius:var(--r-md);padding:8px 12px;margin-bottom:14px}
+.solve-bar .sp{flex:1}
+.wsr{max-width:820px;margin:0 auto}
+.wsr h1{overflow-wrap:anywhere}
+.wsr-head{display:flex;gap:12px;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;margin-bottom:10px}
+.wsr-sub{color:var(--primary);font-weight:700;font-size:13.5px}
+.wsr-meta{color:var(--muted);font-size:14px}
+.wsr-prog{height:10px;background:var(--surface-2);border-radius:999px;overflow:hidden;margin:6px 0 10px}
+.wsr-prog i{display:block;height:100%;background:var(--primary);border-radius:999px;transition:width .3s}
+.wsr-ins{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:14px 16px;margin-bottom:14px;line-height:1.95;display:flex;gap:10px;align-items:flex-start}
+.wsr-img{margin:0 0 14px;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:8px}
+.wsr-img img{display:block;width:100%;height:auto;border-radius:var(--r-sm)}
+.wsr-q{background:var(--surface);border:1px solid var(--line);border-radius:var(--r-lg);padding:16px;margin-bottom:12px;border-inline-start:6px solid var(--line)}
+.wsr-q.is-ok{border-inline-start-color:var(--pos)}
+.wsr-q.is-bad{border-inline-start-color:var(--bad)}
+.wsr-qh{display:flex;gap:10px;align-items:flex-start;margin-bottom:10px}
+.wsr-qh p{margin:3px 0 0;font-weight:600;font-size:17px;flex:1;min-width:0;overflow-wrap:anywhere}
+.wsr-n{width:32px;height:32px;border-radius:50%;background:var(--primary-soft);color:var(--primary);display:grid;place-items:center;font-weight:700;flex:none}
+.wsr-say{background:var(--surface-2);border:1px solid var(--line);border-radius:999px;width:40px;height:40px;cursor:pointer;flex:none;font-size:17px;line-height:1}
+.wsr-opts{display:grid;gap:8px}
+.wsr-opt{display:flex;gap:10px;align-items:center;padding:12px 14px;border:2px solid var(--line);border-radius:var(--r-md);cursor:pointer;background:var(--surface);min-height:52px;font-size:16px}
+.wsr-opt input{width:20px;height:20px;accent-color:var(--primary);flex:none;margin:0}
+.wsr-opt.sel{border-color:var(--primary);background:var(--primary-soft)}
+.wsr-opt:has(input:disabled){cursor:default}
+input.wsr-in{font-size:17px;min-height:52px}
+.wsr-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:12px}
+.wsr-msg{color:var(--due);font-weight:600;font-size:14px}
+.wsr-fb{margin-top:10px;padding:10px 14px;border-radius:var(--r-md);font-weight:600;font-size:16px;outline:none}
+.wsr-fb.ok{background:var(--pos-bg);color:var(--pos)}
+.wsr-fb.try{background:var(--due-bg);color:var(--due)}
+.wsr-fb.bad{background:var(--bad-bg);color:var(--bad)}
+.wsr-end{display:flex;flex-direction:column;align-items:center;gap:8px;margin:20px 0}
+.wsr.big{font-size:19px}
+.wsr.big .wsr-qh p{font-size:22px}
+.wsr.big .wsr-opt{font-size:20px;min-height:62px}
+.wsr.big input.wsr-in{font-size:21px}
+.wsr.big .wsr-ins{font-size:20px}
+.wsr-result{text-align:center;padding:10px 0 16px}
+.wsr-ring{--p:0;width:150px;height:150px;border-radius:50%;margin:0 auto 12px;display:grid;place-items:center;background:conic-gradient(var(--primary) calc(var(--p) * 1%), var(--surface-2) 0)}
+.wsr-ring b{width:118px;height:118px;border-radius:50%;background:var(--bg);display:grid;place-content:center;font-size:40px;line-height:1}
+.wsr-ring small{display:block;font-size:14px;color:var(--muted);font-weight:600;margin-top:6px}
+.wsr-sum{list-style:none;margin:0 0 14px;padding:0}
+.wsr-sum li{display:flex;gap:10px;padding:10px 12px;border:1px solid var(--line);border-radius:var(--r-md);margin-bottom:6px;background:var(--surface)}
+.wsr-sum li > span{font-weight:700;width:22px;flex:none;text-align:center}
+.wsr-sum li.ok > span{color:var(--pos)}
+.wsr-sum li.mid > span{color:var(--due)}
+.wsr-sum li.bad > span{color:var(--bad)}
+.wsr-after{display:flex;flex-direction:column;gap:10px;align-items:center}
+.pf{max-width:860px}
+.pf-hello{background:var(--primary-soft);border-radius:var(--r-lg);padding:14px 16px;margin:12px 0 18px}
+.pf .goal{break-inside:avoid}
+
+/* Auth, portal, exams */
+.userbox{display:flex;align-items:center;gap:6px;font-size:13.5px}
+.userbox .who-name{font-weight:600;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+body[data-mode="auth"] .nav,body[data-mode="auth"] .bnav,body[data-mode="auth"] #storeChip,
+body[data-mode="portal"] .nav,body[data-mode="portal"] .bnav,body[data-mode="portal"] #storeChip{display:none!important}
+body[data-mode="auth"] main,body[data-mode="portal"] main{padding-bottom:40px}
+.auth{max-width:440px;margin:24px auto;display:flex;flex-direction:column;gap:12px}
+.auth-card h1{font-size:23px;margin-bottom:12px}
+.auth-form{display:flex;flex-direction:column;gap:12px}
+.auth-switch{align-self:center;font-weight:600;text-decoration:none;padding:8px}
+.portal-box{display:flex;gap:12px;align-items:flex-start;flex-wrap:wrap;margin-bottom:6px}
+.portal-box .grow{flex:1;min-width:240px}
+.pin{font-size:44px;font-weight:700;letter-spacing:10px;text-align:center;background:var(--primary-soft);color:var(--primary);border-radius:var(--r-lg);padding:14px;margin:8px 0;font-variant-numeric:tabular-nums}
+.asg-g{border-top:1px solid var(--line);padding:8px 0}
+.asg-h{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:4px}
+.asg-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap;padding:5px 0}
+.asg-row select{min-height:36px;padding:4px 8px}
+.bar-q{height:8px;background:var(--surface-2);border-radius:999px;overflow:hidden;margin-top:6px;max-width:420px}
+.bar-q i{display:block;height:100%}
+.pexam{display:flex;gap:12px;align-items:flex-start;margin-bottom:10px;flex-wrap:wrap}
+.pexam .grow{flex:1;min-width:220px}
+.pbar{position:sticky;top:calc(6px + env(safe-area-inset-top,0px));z-index:6;display:flex;gap:14px;align-items:center;flex-wrap:wrap;background:var(--surface);border:1px solid var(--line);border-radius:var(--r-md);padding:8px 12px;margin-bottom:8px}
+.pbar.warn,.pbar:has(.warn){border-color:var(--bad)}
+.ptime{font-weight:600}
+.ptime b{font-size:20px;margin-inline-start:6px}
+.ptime.warn{color:var(--bad)}
+body[data-mode="portal"] .top,body[data-mode="auth"] .top{position:static}
+
 @media print{
   @page{size:A4;margin:14mm}
   body{background:#fff}
@@ -258,14 +381,10 @@ input:focus,select:focus,textarea:focus{border-color:var(--primary);outline:none
   .paper table{page-break-inside:auto}
   .paper tr{page-break-inside:avoid}
 }
-/* View-only public copy */
-html.ro [data-act^="add-"],html.ro [data-act^="edit-"],html.ro [data-act="close-action"],html.ro [data-act="reset-demo"],
-html.ro [data-act="delete-rec"],html.ro [data-act="wa-log"],html.ro .btn.wa,html.ro .btn[disabled][title]{display:none!important}
 </style>
 </head>
 <body>
 <header class="top">
-  <div class="demo" role="note">نسخة تجريبية — بيانات وهمية</div>
   <div class="bar">
     <a class="brand" href="#home" style="text-decoration:none;color:inherit" aria-label="أثر، الصفحة الرئيسية">
       <svg class="mark" viewBox="0 0 40 40" aria-hidden="true">
@@ -280,9 +399,12 @@ html.ro [data-act="delete-rec"],html.ro [data-act="wa-log"],html.ro .btn.wa,html
     <nav class="nav" aria-label="التنقل الرئيسي">
       <a href="#home" data-nav="home">الرئيسية</a>
       <a href="#students" data-nav="students">الطلاب</a>
+      <a href="#exams" data-nav="exams">الامتحانات</a>
       <a href="#reports" data-nav="reports">التقارير</a>
+      <a href="#staff" data-nav="staff" data-admin hidden>المعلمون</a>
     </nav>
-    <button class="store" id="storeChip" data-mode="memory" type="button" aria-describedby="storeChipText"><i></i><span id="storeChipText">جارٍ تجهيز الحفظ…</span></button>
+    <button class="store" id="storeChip" data-mode="memory" type="button" aria-describedby="storeChipText"><i></i><span id="storeChipText">غير متصل</span></button>
+    <div class="userbox" id="userBox"></div>
   </div>
 </header>
 
@@ -291,6 +413,7 @@ html.ro [data-act="delete-rec"],html.ro [data-act="wa-log"],html.ro .btn.wa,html
 <nav class="bnav" aria-label="التنقل السفلي">
   <a href="#home" data-nav="home"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>الرئيسية</a>
   <a href="#students" data-nav="students"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.5 3.4-5.5 6.5-5.5s5.7 2 6.5 5.5"/><path d="M16 4.5a3.5 3.5 0 0 1 0 7M18.5 14.8c1.6.8 2.6 2.6 3 5.2"/></svg>الطلاب</a>
+  <a href="#exams" data-nav="exams"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 3h9l4 4v14H6z"/><path d="M9 12l2 2 4-4M9 17h6"/></svg>الامتحانات</a>
   <a href="#reports" data-nav="reports"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M6 3h9l4 4v14H6z"/><path d="M9 12h7M9 16h7M9 8h3"/></svg>التقارير</a>
 </nav>
 
@@ -301,7 +424,6 @@ html.ro [data-act="delete-rec"],html.ro [data-act="wa-log"],html.ro .btn.wa,html
 (function(){
 "use strict";
 
-const READONLY = true;
 /* ---------- helpers ---------- */
 const $ = (s, r=document) => r.querySelector(s);
 const $$ = (s, r=document) => Array.from(r.querySelectorAll(s));
@@ -457,79 +579,143 @@ function seed(){
     comms:[
       {id:uid("c"),date:d(-15),with:"أخصائي خارجي",channel:"بريد إلكتروني",summary:"طلب تقرير فحص البصر المحدث لتحديث تيسيرات الامتحانات النهائية.",action:"استلام التقرير وتحديث ملف التيسيرات.",by:"أ. خالد المرزوقي",followDate:d(10),status:"open"}]
   });
-  return {v:1, updatedAt:Date.now(), students:S};
+  return {students:S};
 }
 
-/* ---------- storage ---------- */
-const LS_KEY = "athar-demo-v1";
-let state = null;
-const store = { mode:"memory", ref:null, saving:Promise.resolve(), timer:null, lsOk:false, checking:true };
+/* ---------- connection (Supabase) ---------- */
+let state = {students:[]};
+const store = { mode:"offline", seq:0, refreshing:false, pending:false, error:"", timer:null, loadedAt:0, syncing:Promise.resolve() };
+let sb = null;
+const me = { user:null, staff:null };
+const nz = v => (v === "" || v === undefined) ? null : v;
+const nn = v => v == null ? "" : v;
 
-function lsRead(){ try { const raw = localStorage.getItem(LS_KEY); store.lsOk = true; return raw ? JSON.parse(raw) : null; } catch(e){ store.lsOk = false; return null; } }
-function lsWrite(){ try { localStorage.setItem(LS_KEY, JSON.stringify(state)); store.lsOk = true; return true; } catch(e){ store.lsOk = false; return false; } }
+const MAP = {
+  goals:{t:"goals", list:s => s.iep.goals, to:(g, s, i) => ({id:g.id, student_id:s.id, area:g.area, text:g.text, baseline:g.baseline || null, target:Number(g.target) || 0, freq:Number(g.freq) || 7, sort:i}),
+    from:r => ({id:r.id, area:nn(r.area), text:nn(r.text), baseline:r.baseline || {correct:0, total:1, support:"مستقل", date:""}, target:Number(r.target), freq:r.freq})},
+  accommodations:{t:"accommodations", list:s => s.accommodations, to:(a, s, i) => ({id:a.id, student_id:s.id, cat:a.cat, text:a.text, sort:i}), from:r => ({id:r.id, cat:nn(r.cat), text:nn(r.text)})},
+  followups:{t:"followups", list:s => s.followups, to:(f, s) => ({id:f.id, student_id:s.id, goal_id:nz(f.goalId), date:nz(f.date), subject:f.subject, task:f.task, outcome:f.outcome, strategy:f.strategy, support:f.support, correct:Number(f.correct), total:Number(f.total), by_name:f.by, notes:f.notes || ""}),
+    from:r => ({id:r.id, goalId:nn(r.goal_id), date:nn(r.date), subject:nn(r.subject), task:nn(r.task), outcome:nn(r.outcome), strategy:nn(r.strategy), support:nn(r.support), correct:r.correct, total:r.total, by:nn(r.by_name), notes:nn(r.notes), attemptId:nn(r.attempt_id)})},
+  works:{t:"works", list:s => s.works, to:(w, s) => ({id:w.id, student_id:s.id, goal_id:nz(w.goalId), date:nz(w.date), title:w.title, type:w.type, note:w.note || "", score:w.score || null}),
+    from:r => ({id:r.id, goalId:nn(r.goal_id), date:nn(r.date), title:nn(r.title), type:nn(r.type), note:nn(r.note), score:r.score || null, attemptId:nn(r.attempt_id)})},
+  behavior:{t:"behavior", list:s => s.behavior, to:(b, s) => ({id:b.id, student_id:s.id, type:b.type, date:nz(b.date), descr:b.desc, action:b.action, by_name:b.by, follow_date:nz(b.followDate), status:b.status || "open"}),
+    from:r => ({id:r.id, type:r.type, date:nn(r.date), desc:nn(r.descr), action:nn(r.action), by:nn(r.by_name), followDate:nn(r.follow_date), status:r.status})},
+  comms:{t:"comms", list:s => s.comms, to:(c, s) => ({id:c.id, student_id:s.id, date:nz(c.date), with_whom:c.with, channel:c.channel, summary:c.summary, action:c.action || "", by_name:c.by, follow_date:nz(c.followDate), status:c.status || "open"}),
+    from:r => ({id:r.id, date:nn(r.date), with:nn(r.with_whom), channel:nn(r.channel), summary:nn(r.summary), action:nn(r.action), by:nn(r.by_name), followDate:nn(r.follow_date), status:r.status})}
+};
+const KIDS = ["goals","accommodations","followups","works","behavior","comms"];
+const STU_COLS = "id,school_no,name,grade,section,category,dob,guardian,phone,coordinator,notes,iep_start,iep_review,iep_team,portal_violations,pin_set";
+function studentRow(s){ return {id:s.id, school_no:String(s.schoolNo || "").trim(), name:s.name, grade:s.grade, section:s.section, category:s.category, dob:nz(s.dob), guardian:s.guardian, phone:s.phone, coordinator:s.coordinator, notes:s.notes || "", iep_start:nz(s.iep && s.iep.start), iep_review:nz(s.iep && s.iep.review), iep_team:(s.iep && s.iep.team) || "", portal_violations:!!s.portalViolations}; }
+function studentFrom(r){ return {id:r.id, schoolNo:nn(r.school_no), name:nn(r.name), grade:nn(r.grade), section:nn(r.section), category:nn(r.category), dob:nn(r.dob), guardian:nn(r.guardian), phone:nn(r.phone), coordinator:nn(r.coordinator), notes:nn(r.notes), portalViolations:!!r.portal_violations, pinSet:!!r.pin_set,
+  iep:{start:nn(r.iep_start), review:nn(r.iep_review), team:nn(r.iep_team), goals:[]}, accommodations:[], followups:[], works:[], behavior:[], comms:[]}; }
 
-function setMode(mode){ store.mode = mode; renderStoreChip(); if(ui.route==="home") { const n = $("#storageNote"); if(n) n.outerHTML = storageNoteHTML(); } }
+function rowsOf(st){
+  const out = new Map();
+  st.students.forEach(s => {
+    out.set("students:" + s.id, {t:"students", row:studentRow(s)});
+    KIDS.forEach(k => MAP[k].list(s).forEach((r, i) => out.set(MAP[k].t + ":" + r.id, {t:MAP[k].t, row:MAP[k].to(r, s, i)})));
+  });
+  return out;
+}
+let snap = new Map();
+function takeSnap(){ snap = new Map(); rowsOf(state).forEach((v, k) => snap.set(k, JSON.stringify(v.row))); }
+
+async function fetchAll(table, cols, order){
+  const out = []; let from = 0;
+  for(;;){
+    let q = sb.from(table).select(cols).range(from, from + 999);
+    if(order) q = q.order(order);
+    const {data, error} = await q;
+    if(error) throw error;
+    out.push(...data);
+    if(data.length < 1000) break;
+    from += 1000;
+  }
+  return out;
+}
+async function fetchState(){
+  const [st, go, ac, fu, wo, be, co] = await Promise.all([
+    fetchAll("students", STU_COLS, "name"), fetchAll("goals", "*", "sort"), fetchAll("accommodations", "*", "sort"),
+    fetchAll("followups", "*", "date"), fetchAll("works", "*", "date"), fetchAll("behavior", "*", "date"), fetchAll("comms", "*", "date")]);
+  const byId = {}; const students = st.map(r => (byId[r.id] = studentFrom(r)));
+  go.forEach(r => { const s = byId[r.student_id]; if(s) s.iep.goals.push(MAP.goals.from(r)); });
+  ac.forEach(r => { const s = byId[r.student_id]; if(s) s.accommodations.push(MAP.accommodations.from(r)); });
+  fu.forEach(r => { const s = byId[r.student_id]; if(s) s.followups.push(MAP.followups.from(r)); });
+  wo.forEach(r => { const s = byId[r.student_id]; if(s) s.works.push(MAP.works.from(r)); });
+  be.forEach(r => { const s = byId[r.student_id]; if(s) s.behavior.push(MAP.behavior.from(r)); });
+  co.forEach(r => { const s = byId[r.student_id]; if(s) s.comms.push(MAP.comms.from(r)); });
+  return {students};
+}
+function applyState(st){ state = st; takeSnap(); store.loadedAt = Date.now(); store.error = ""; store.pending = false; setMode("online"); }
+async function loadAll(){ applyState(await fetchState()); }
+function maybeRefresh(force){
+  if(!sb || !(me.staff && me.staff.approved) || store.pending || store.refreshing || isPortalRoute(ui.route)) return;
+  if(!force && Date.now() - store.loadedAt < 30000) return;
+  const seq = store.seq;
+  store.refreshing = true;
+  fetchState().then(st => {
+    store.refreshing = false;
+    if(store.seq !== seq || store.pending) return;
+    applyState(st);
+    if(!$("#modalRoot").innerHTML && ui.route !== "exam" && !isPortalRoute(ui.route)) render();
+  }).catch(() => { store.refreshing = false; });
+}
+document.addEventListener("visibilitychange", () => { if(document.visibilityState === "visible") maybeRefresh(); });
+function dbError(err){
+  const m = (err && (err.message || err.details)) || "";
+  if(err && err.code === "23505") return "الرقم المدرسي مستخدم لطالب آخر.";
+  if(/JWT|jwt|session/i.test(m)) return "انتهت جلسة الدخول. سجّل الدخول من جديد.";
+  if(/Failed to fetch|NetworkError|network/i.test(m)) return "لا يوجد اتصال بالإنترنت.";
+  if(err && err.code === "42501") return "ليست لديك صلاحية لهذا الإجراء.";
+  return "تعذّر الحفظ" + (m ? ": " + m : ".");
+}
+async function syncNow(){
+  const cur = rowsOf(state), ups = {}, dels = {};
+  cur.forEach((v, k) => { const j = JSON.stringify(v.row); if(snap.get(k) !== j) (ups[v.t] = ups[v.t] || []).push([k, v.row, j]); });
+  snap.forEach((j, k) => { if(!cur.has(k)){ const [t, id] = [k.slice(0, k.indexOf(":")), k.slice(k.indexOf(":") + 1)]; (dels[t] = dels[t] || []).push([k, id]); } });
+  const upOrder = ["students","goals","accommodations","followups","works","behavior","comms"];
+  for(const t of upOrder){
+    const list = ups[t]; if(!list || !list.length) continue;
+    const {error} = await sb.from(t).upsert(list.map(x => x[1]));
+    if(error) throw error;
+    list.forEach(([k, , j]) => snap.set(k, j));
+  }
+  for(const t of upOrder.slice().reverse()){
+    const list = dels[t]; if(!list || !list.length) continue;
+    const {error} = await sb.from(t).delete().in("id", list.map(x => x[1]));
+    if(error) throw error;
+    list.forEach(([k]) => snap.delete(k));
+  }
+}
+function save(){
+  store.seq++; store.pending = true; renderStoreChip();
+  clearTimeout(store.timer);
+  store.timer = setTimeout(() => {
+    store.syncing = store.syncing.then(async () => {
+      try { await syncNow(); store.pending = false; store.error = ""; setMode("online"); }
+      catch(err){ console.warn("sync failed", err); store.error = dbError(err); setMode("error"); toast(store.error, {label:"إعادة المحاولة", fn:() => save()}); }
+    });
+  }, 400);
+}
+function setMode(mode){ store.mode = mode; renderStoreChip(); const n = $("#storageNote"); if(n) n.outerHTML = storageNoteHTML(); }
 function storeText(){
-  if(READONLY) return {short:"للعرض فقط", long:"هذه نسخة للعرض فقط. لا يمكن إضافة أو تعديل أي بيانات من هذا الرابط."};
-  if(store.checking && store.mode!=="account") return {short:"جارٍ التحقق من الحفظ…", long:"جارٍ التحقق من مكان حفظ البيانات."};
-  if(store.mode==="account") return {short:"محفوظ في حسابك", long:"التعديلات محفوظة في مساحتك الشخصية الخاصة بهذا العمل في Claude، وتبقى بعد إغلاق الصفحة وإعادة فتحها، ولا يراها غيرك."};
-  if(store.mode==="browser") return {short:"محفوظ في هذا المتصفح", long:"التعديلات محفوظة في هذا المتصفح على هذا الجهاز فقط، وتبقى بعد إعادة الفتح ما لم تُمسح بيانات المتصفح. لن تظهر على جهاز آخر."};
-  return {short:"غير محفوظ: جلسة مؤقتة", long:"التخزين غير متاح في هذا العرض، لذلك تبقى التعديلات حتى إغلاق الصفحة أو إعادة تحميلها فقط، ثم تعود البيانات الوهمية الأصلية."};
+  if(store.mode === "error") return {short:"تعذّر الحفظ", long:store.error + " اضغط لإعادة المحاولة."};
+  if(store.pending) return {short:"جارٍ الحفظ…", long:"تُرسل التعديلات إلى قاعدة البيانات."};
+  if(store.mode === "online") return {short:"محفوظ في قاعدة البيانات", long:"كل التعديلات تُحفظ مباشرة في قاعدة بيانات المدرسة، ويراها كل المعلمين المعتمدين، وتظهر لولي الأمر في البوابة."};
+  return {short:"غير متصل", long:"لم يتم الاتصال بقاعدة البيانات بعد."};
 }
 function renderStoreChip(){
-  const c = $("#storeChip"); c.dataset.mode = store.checking && store.mode!=="account" ? "memory" : store.mode;
-  $("#storeChipText").textContent = storeText().short;
-  c.title = storeText().long;
+  const c = $("#storeChip"); if(!c) return;
+  c.dataset.mode = store.mode === "error" ? "memory" : store.pending ? "browser" : store.mode === "online" ? "account" : "memory";
+  $("#storeChipText").textContent = storeText().short; c.title = storeText().long;
 }
-function save(){ if(READONLY) return;
-  state.updatedAt = Date.now();
-  if(store.mode !== "memory" || store.lsOk) lsWrite();
-  if(store.mode === "account" && store.ref){
-    clearTimeout(store.timer);
-    store.timer = setTimeout(() => {
-      const body = {json: JSON.stringify(state), updatedAt: state.updatedAt};
-      store.saving = store.saving.then(() => store.ref.set(body)).catch(err => {
-        console.warn("db save failed", err);
-        if(err && (err.code==="revoked" || err.code==="invalid_argument" || err.code==="not_granted")) { setMode(store.lsOk ? "browser" : "memory"); toast("تعذّر الحفظ في الحساب، وأصبح الحفظ في هذا المتصفح."); }
-        else if(err && err.code==="quota_exceeded") toast("مساحة الحفظ ممتلئة. احذف بعض السجلات ثم حاول.");
-      });
-    }, 350);
-  }
+async function refreshData(){
+  if(store.pending){ toast("انتظر حتى ينتهي الحفظ."); return; }
+  try { await loadAll(); render(); toast("حُدّثت البيانات."); } catch(err){ toast(dbError(err)); }
 }
-async function connectAccountStorage(){
-  try {
-    if(!window.claude || typeof window.claude.use !== "function") return;
-    const [db, user] = await Promise.all([window.claude.use("db"), window.claude.use("user")]);
-    if(!db || !user) return;
-    const id = await user.id();
-    if(!id) return;
-    const ref = db.doc("data/users/" + id + "/athar");
-    const snap = await ref.get();
-    let remote = null;
-    if(snap.exists){ try { remote = JSON.parse(snap.data().json); } catch(e){ remote = null; } }
-    if(remote && remote.students && (!state || (remote.updatedAt||0) >= (state.updatedAt||0))){
-      state = remote; migrate(state); lsWrite(); render();
-    } else {
-      await ref.set({json: JSON.stringify(state), updatedAt: state.updatedAt});
-    }
-    store.ref = ref;
-    setMode("account");
-  } catch(err){
-    console.warn("account storage unavailable", err);
-  } finally {
-    store.checking = false; renderStoreChip();
-    if(ui.route==="home"){ const n = $("#storageNote"); if(n) n.outerHTML = storageNoteHTML(); }
-  }
-}
-
-/* one-time rename for data saved before the change */
-function migrate(st){
-  const s = st && st.students && st.students.find(x => x.id === "s5" && x.name === "يوسف أحمد الطنيجي");
-  if(!s) return false;
-  s.name = "خالد سامح";
-  if(s.guardian === "أحمد الطنيجي (الأب)") s.guardian = "سامح (الأب)";
-  s.iep.goals.forEach(g => { g.text = g.text.replace("يوسف", "خالد"); });
-  return true;
+async function loadDemo(){
+  if(state.students.length){ toast("قاعدة البيانات فيها طلاب بالفعل."); return; }
+  const d = seed(); state.students = d.students; render(); save(); toast("جارٍ تحميل البيانات التجريبية…");
 }
 
 /* ---------- domain ---------- */
@@ -585,7 +771,7 @@ function studentFlags(s){
 }
 
 /* ---------- UI state & routing ---------- */
-const ui = { route:"home", sid:null, tab:"data", search:"", grade:"", section:"", fuGoal:"", beh:"all", report:{sid:"s1", from:"", to:""}, flashGoal:null, newFu:null };
+const ui = { route:"home", sid:null, tab:"data", search:"", grade:"", section:"", fuGoal:"", beh:"all", report:{sid:"s1", from:"", to:""}, flashGoal:null, newFu:null, exid:null, exDraft:null, exErrs:null, resData:null };
 const TABS = [["data","البيانات والتيسيرات"],["iep","الخطة الفردية IEP"],["daily","المتابعة اليومية"],["works","أعمال الطالب"],["behavior","السلوك والمخالفات"],["comms","التواصل"]];
 
 function parseHash(){
@@ -593,20 +779,39 @@ function parseHash(){
   let m;
   if(h === "students") return {route:"students"};
   if(h === "reports") return {route:"report"};
-  if((m = h.match(/^student-([a-z0-9]+)$/i))) return {route:"student", sid:m[1]};
-  if((m = h.match(/^report-([a-z0-9]+)$/i))) return {route:"report", sid:m[1]};
+  if(h === "exams") return {route:"exams"};
+  if(h === "staff") return {route:"staff"};
+  if(h === "portal") return {route:"portal"};
+  if((m = h.match(/^portal-exam-([\w-]+)$/))) return {route:"pexam", exid:m[1]};
+  if((m = h.match(/^exam-([\w-]+)$/))) return {route:"exam", exid:m[1]};
+  if((m = h.match(/^results-([\w-]+)$/))) return {route:"results", exid:m[1]};
+  if((m = h.match(/^student-([\w-]+)$/))) return {route:"student", sid:m[1]};
+  if((m = h.match(/^report-([\w-]+)$/))) return {route:"report", sid:m[1]};
   return {route:"home"};
 }
 function go(hash){ if(location.hash === "#"+hash) render(); else location.hash = hash; }
-window.addEventListener("hashchange", () => { const p = parseHash(); if(p.route==="student" && p.sid!==ui.sid) ui.tab = "data"; Object.assign(ui, p); if(p.route==="report" && p.sid) ui.report.sid = p.sid; render(); $("#view").focus({preventScroll:true}); window.scrollTo(0,0); });
+window.addEventListener("hashchange", () => { const p = parseHash(); if(P.run && (p.route !== "pexam" || p.exid !== P.run.exam_id)){ if(P.run.dirty) pSaveNow(); clearInterval(P.run.tick); P.run = null; try { speechSynthesis.cancel(); } catch(e){} } if(p.route === "exam" && p.exid !== ui.exid){ ui.exErrs = null; ui.exDraft = null; } if(p.route === "portal") P.data = null; if(!isPortalRoute(p.route) && p.route !== "exam") setTimeout(maybeRefresh, 0); if(p.route==="student" && p.sid!==ui.sid) ui.tab = "data"; Object.assign(ui, p); if(p.route==="report" && p.sid) ui.report.sid = p.sid; render(); $("#view").focus({preventScroll:true}); window.scrollTo(0,0); });
 
+function isPortalRoute(r){ return r === "portal" || r === "pexam"; }
 function render(){
   const v = $("#view");
+  if(!sb) return;
+  if(isPortalRoute(ui.route)){ renderPortal(); return; }
+  if(!(me.staff && me.staff.approved)){ showAuth(AUTH.view === "recover" ? "recover" : (me.user && me.staff ? "pending" : "login")); return; }
+  shellMode("staff"); renderUser();
+  const tok = ++renderTok;
   if(ui.route === "students") v.innerHTML = viewStudents();
   else if(ui.route === "student"){ const s = stu(ui.sid); v.innerHTML = s ? viewStudent(s) : notFound(); }
-  else if(ui.route === "report") v.innerHTML = viewReport();
+  else if(ui.route === "report"){ if(!stu(ui.report.sid) && state.students[0]) ui.report.sid = state.students[0].id; v.innerHTML = state.students.length ? viewReport() : '<div class="panel empty">أضف طلابًا أولًا.</div>'; }
+  else if(ui.route === "exams") viewExamsAsync(tok).catch(err => { v.innerHTML = `<div class="panel empty">${esc(dbError(err))}</div>`; });
+  else if(ui.route === "results") viewResultsAsync(ui.exid, tok).catch(err => { v.innerHTML = `<div class="panel empty">${esc(dbError(err))}</div>`; });
+  else if(ui.route === "staff"){ if(me.staff.role === "admin") viewStaffAsync(); else v.innerHTML = '<div class="panel empty">هذه الصفحة لمسؤول النظام.</div>'; }
+  else if(ui.route === "exam"){
+    if(ui.exDraft && ui.exDraft._for === ui.exid) v.innerHTML = viewExamEdit();
+    else { v.innerHTML = '<div class="panel empty">جارٍ التحميل…</div>'; loadExamDraft(ui.exid, tok).then(ok => { if(tok !== renderTok) return; if(ok) v.innerHTML = viewExamEdit(); else if(ok === null) v.innerHTML = '<div class="panel empty"><p>لم يُعثر على الامتحان.</p><a class="btn" href="#exams">الامتحانات</a></div>'; }).catch(err => { v.innerHTML = `<div class="panel empty">${esc(dbError(err))}</div>`; }); }
+  }
   else v.innerHTML = viewHome();
-  const navKey = ui.route === "student" ? "students" : ui.route === "report" ? "reports" : ui.route;
+  const navKey = ui.route === "student" ? "students" : ui.route === "report" ? "reports" : (ui.route === "exam" || ui.route === "results") ? "exams" : ui.route;
   $$("[data-nav]").forEach(a => a.setAttribute("aria-current", a.dataset.nav === navKey ? "page" : "false"));
   if(ui.flashGoal){ const el = document.getElementById("goal-"+ui.flashGoal); if(el){ el.classList.add("flash"); el.scrollIntoView({block:"center"}); } ui.flashGoal = null; }
 }
@@ -623,10 +828,9 @@ const ICON = {
 
 /* ---------- Home ---------- */
 function storageNoteHTML(){
-  if(READONLY) return '<div class="storage-note" id="storageNote"><div class="grow"><b>نسخة للعرض فقط</b><br><span class="muted">يمكنك تصفح الطلاب والخطط والتقارير وطباعتها، لكن لا يمكن إضافة أو تعديل أي بيانات من هذا الرابط.</span></div></div>';
   const t = storeText();
-  return '<div class="storage-note" id="storageNote"><div class="grow"><b>هل تبقى التعديلات؟</b><br><span class="muted">'+esc(t.long)+'</span></div>'+
-    '<button class="btn sm" data-act="reset-demo">إعادة البيانات الوهمية</button></div>';
+  return '<div class="storage-note" id="storageNote"><div class="grow"><b>' + esc(t.short) + '</b><br><span class="muted">' + esc(t.long) + (store.loadedAt ? ' آخر تحميل: ' + esc(new Date(store.loadedAt).toLocaleTimeString("ar-AE-u-nu-latn", {hour:"numeric", minute:"2-digit"})) + '.' : '') + '</span></div>' +
+    '<button class="btn sm" data-act="refresh">تحديث البيانات</button>' + (!state.students.length && me.staff && me.staff.role === "admin" ? '<button class="btn sm" data-act="load-demo">تحميل بيانات تجريبية (5 طلاب)</button>' : '') + '</div>';
 }
 function viewHome(){
   const dg = dueGoals(), oa = openActions();
@@ -638,7 +842,7 @@ function viewHome(){
   return `
   <div class="hero">
     <div>
-      <h1>صباح الخير، فريق الدعم</h1>
+      <h1>مرحبًا ${esc(me.staff && me.staff.name ? me.staff.name : "")}</h1>
       <p class="lede">${esc(fmt(today()))} · برنامج أصحاب الهمم</p>
       <div class="summary num">
         <span><b>${state.students.length}</b> طلاب في البرنامج</span>
@@ -753,7 +957,8 @@ function fuTable(s, rows, opts={}){
     ${opts.edit!==false?`<td><button class="btn sm ghost" data-act="edit-fu" data-sid="${s.id}" data-id="${f.id}" aria-label="تعديل متابعة ${esc(fmt(f.date))}">${ICON.edit}</button></td>`:''}
   </tr>`; }).join("")}</tbody></table></div>`;
 }
-function tabData(s){
+function tabData(s){ return portalPanelHTML(s) + tabDataBase(s); }
+function tabDataBase(s){
   const groups = ACC_CATS.map(c => [c, s.accommodations.filter(a => a.cat === c)]).filter(x => x[1].length);
   return `
   <div class="section-h"><h2>البيانات الأساسية</h2><button class="btn sm" data-act="edit-student" data-sid="${s.id}">${ICON.edit}تعديل البيانات</button></div>
@@ -812,11 +1017,11 @@ function tabDaily(s){
 }
 function tabWorks(s){
   const rows = s.works.slice().sort(sortDesc);
-  return `<div class="section-h"><h2>أعمال الطالب</h2><button class="btn sm" data-act="add-work" data-sid="${s.id}">${ICON.plus}إضافة عمل</button></div>
-  <p class="muted" style="font-size:13px;margin-top:-4px">سجلات تجريبية تمثل أعمالًا محفوظة؛ لا تُرفع ملفات في هذه النسخة.</p>
+  return `<div class="section-h"><h2>أعمال الطالب</h2><div style="display:flex;gap:6px;flex-wrap:wrap"><a class="btn sm primary" href="#exams">إسناد امتحان أو ورقة عمل</a><button class="btn sm" data-act="add-work" data-sid="${s.id}">${ICON.plus}إضافة عمل</button></div></div>
+  <p class="muted" style="font-size:13px;margin-top:-4px">نتائج الامتحانات وأوراق العمل الإلكترونية تُصحَّح تلقائيًا من البوابة وتظهر هنا مع درجتها.</p>
   ${rows.length ? rows.map(w => { const g = goalOf(s,w.goalId); return `<div class="rec work">
     <div class="thumb" aria-hidden="true">${ICON.doc}</div>
-    <div style="min-width:0"><div class="rec-h"><b>${esc(w.title)}</b><span class="tag">${esc(w.type)}</span></div>
+    <div style="min-width:0"><div class="rec-h"><b>${esc(w.title)}</b><span class="tag">${esc(w.type)}</span>${w.score ? scoreTag(w.score) : ""}</div>
       <div class="muted num" style="font-size:13.5px">${esc(fmt(w.date))} · الهدف المرتبط: ${g?esc(g.area):'غير مرتبط'}</div>
       ${w.note?'<p>'+esc(w.note)+'</p>':''}</div>
     <button class="btn sm" data-act="edit-work" data-sid="${s.id}" data-id="${w.id}">${ICON.edit}تعديل</button></div>`; }).join("") : '<div class="panel empty">لا توجد أعمال مسجلة.</div>'}`;
@@ -863,7 +1068,8 @@ function viewStudent(s){
     <div class="avatar" aria-hidden="true">${esc(initials(s.name))}</div>
     <div><h1>${esc(s.name)}</h1><div class="muted num">الرقم المدرسي ${esc(s.schoolNo)} · الصف ${esc(s.grade)} / شعبة ${esc(s.section)} · ${esc(s.category)}</div></div>
     <div class="actions"><button class="btn primary" data-act="add-fu" data-sid="${s.id}">${ICON.plus}إضافة متابعة يومية</button>
-      <a class="btn" href="#report-${s.id}">${ICON.print}تقرير الطالب</a></div>
+      <a class="btn" href="#report-${s.id}">${ICON.print}تقرير الطالب</a>
+      <button class="btn" data-act="parent-file" data-sid="${s.id}">${ICON.down}ملف ولي الأمر</button></div>
   </div>
   <div class="tabs" role="tablist" aria-label="أقسام ملف الطالب">
     ${TABS.map(([k,l]) => `<button role="tab" id="tab-${k}" aria-selected="${ui.tab===k}" aria-controls="tabpanel" data-act="tab" data-k="${k}">${l}</button>`).join("")}
@@ -895,7 +1101,6 @@ function reportHTML(s, from, to){
       <td class="num">${g.target}%<br>${status}</td></tr>`;
   }).join("");
   return `<article class="paper" id="reportPaper">
-    <div class="r-demo">نسخة تجريبية — بيانات وهمية</div>
     <div class="r-head"><div><h1>تقرير متابعة طالب من أصحاب الهمم</h1><div class="muted">Ras Al Khaimah Secondary School for Boys · برنامج أصحاب الهمم</div><div class="muted" style="font-size:12px"><bdi>Designed &amp; developed by Khaled Sameh</bdi></div></div>
       <div class="num" style="text-align:end"><b>الفترة</b><br>${esc(fmt(from))} إلى ${esc(fmt(to))}<br><span class="muted">أُعدّ في ${esc(fmt(today()))}</span></div></div>
     <dl class="dl">
@@ -984,8 +1189,8 @@ function viewReport(){
   return `
   <div class="no-print">
     <div class="hero" style="margin-bottom:6px"><div><h1>تقرير الطالب</h1><p class="lede">اختر الطالب والفترة، ثم اطبع التقرير أو نزّله.</p></div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn primary" data-act="print">${ICON.print}${READONLY ? "طباعة" : "طباعة وإرسال لولي الأمر"}</button>${waNumber(s.phone) ? `<a class="btn wa" href="${esc(waURL(s))}" target="_blank" rel="noopener" data-act="wa-log" data-sid="${s.id}">${ICON.wa}واتساب فقط</a>` : `<button class="btn" disabled title="لا يوجد رقم لولي الأمر">${ICON.wa}لا يوجد رقم واتساب</button>`}<button class="btn" data-act="download-report" id="dlBtn">${ICON.down}تنزيل نسخة HTML</button></div></div>
-    <p class="muted" style="font-size:13px;margin:0 0 10px"${READONLY ? " hidden" : ""}>بعد الطباعة يفتح واتساب برسالة جاهزة لولي الأمر (${esc(s.guardian||"—")} · <bdi dir="ltr">${esc(s.phone||"—")}</bdi>)، وتضغط أنت «إرسال». الإرسال التلقائي بدون ضغطة غير ممكن من صفحة ويب.</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn primary" data-act="print">${ICON.print}طباعة وإرسال لولي الأمر</button>${waNumber(s.phone) ? `<a class="btn wa" href="${esc(waURL(s))}" target="_blank" rel="noopener" data-act="wa-log" data-sid="${s.id}">${ICON.wa}واتساب فقط</a>` : `<button class="btn" disabled title="لا يوجد رقم لولي الأمر">${ICON.wa}لا يوجد رقم واتساب</button>`}<button class="btn" data-act="download-report" id="dlBtn">${ICON.down}تنزيل نسخة HTML</button></div></div>
+    <p class="muted" style="font-size:13px;margin:0 0 10px">بعد الطباعة يفتح واتساب برسالة جاهزة لولي الأمر (${esc(s.guardian||"—")} · <bdi dir="ltr">${esc(s.phone||"—")}</bdi>)، وتضغط أنت «إرسال». الإرسال التلقائي بدون ضغطة غير ممكن من صفحة ويب.</p>
     <div class="rep-controls">
       <div class="field s"><label for="rs">الطالب</label><select id="rs">${state.students.map(x => `<option value="${x.id}" ${x.id===r.sid?"selected":""}>${esc(x.name)} (${esc(x.schoolNo)})</option>`).join("")}</select></div>
       <div class="field"><label for="rf">من</label><input type="date" id="rf" value="${r.from}" max="${r.to}"></div>
@@ -996,7 +1201,7 @@ function viewReport(){
       <button class="btn sm" data-act="preset" data-d="30">آخر 30 يومًا</button>
       <button class="btn sm" data-act="preset" data-d="plan">منذ بداية الخطة</button>
     </div>
-    <p class="muted" style="font-size:13px" id="printHint"${READONLY ? " hidden" : ""}>إن لم تظهر نافذة الطباعة داخل Claude، افتح العمل في صفحته الكاملة ثم اطبع${''}، أو استخدم زر التنزيل إن ظهر.</p>
+    <p class="muted" style="font-size:13px" id="printHint">إن لم تظهر نافذة الطباعة داخل Claude، افتح العمل في صفحته الكاملة ثم اطبع${''}، أو استخدم زر التنزيل إن ظهر.</p>
   </div>
   ${reportHTML(s, r.from, r.to)}`;
 }
@@ -1179,6 +1384,708 @@ function iepForm(s){
     values:{...s.iep}, onSave: x => { Object.assign(s.iep, x); save(); closeModal(); toast("حُفظت بيانات الخطة."); render(); } });
 }
 
+/* ================= Exams (staff) ================= */
+const QTYPES = {mcq:"اختيار من متعدد", tf:"صح أو خطأ", short:"إجابة قصيرة", num:"إجابة رقمية"};
+const AR_L = ["أ","ب","ج","د","هـ","و"];
+const SHOW = {answers:"الدرجة والإجابات الصحيحة", score:"الدرجة فقط", none:"لا شيء (يُبلَّغ لاحقًا)"};
+const EX_STATUS = {draft:["مسودة",""], open:["مفتوح","ok"], closed:["مغلق","late"]};
+let renderTok = 0;
+function wsAnswerText(q, k){
+  if(k === undefined || k === null) return "—";
+  if(q.type === "mcq") return AR_L[k] + ") " + ((q.options || [])[k] || "");
+  if(q.type === "tf") return k === "t" ? "صح" : "خطأ";
+  if(q.type === "short") return (k && k[0]) || "—";
+  if(q.type === "num") return String(k.v);
+  return "—";
+}
+function scoreTag(sc){ if(!sc || !sc.total) return ""; const p = pct(sc.correct, sc.total); return `<span class="tag ${p >= 80 ? 'ok' : p >= 50 ? 'due' : 'late'} num">${sc.correct}/${sc.total} · ${p}%</span>`; }
+const toLocalInput = iso => { if(!iso) return ""; const d = new Date(iso); return isoOf(d) + "T" + pad(d.getHours()) + ":" + pad(d.getMinutes()); };
+const fromLocalInput = v => v ? new Date(v).toISOString() : null;
+const fmtDT = iso => { if(!iso) return "—"; try { return new Date(iso).toLocaleString("ar-AE-u-nu-latn", {day:"numeric", month:"short", hour:"numeric", minute:"2-digit"}); } catch(e){ return iso; } };
+function compressImage(file){
+  return new Promise((res, rej) => {
+    const fr = new FileReader(); fr.onerror = () => rej(new Error("read"));
+    fr.onload = () => { const im = new Image(); im.onerror = () => rej(new Error("decode"));
+      im.onload = () => { let dim = 1400, q = 0.72, out = "";
+        for(let i = 0; i < 10; i++){ const sc = Math.min(1, dim / Math.max(im.width, im.height)); const c = document.createElement("canvas"); c.width = Math.max(1, Math.round(im.width * sc)); c.height = Math.max(1, Math.round(im.height * sc));
+          const x = c.getContext("2d"); x.fillStyle = "#fff"; x.fillRect(0, 0, c.width, c.height); x.drawImage(im, 0, 0, c.width, c.height); out = c.toDataURL("image/jpeg", q);
+          if(out.length <= 170000) break; if(q > 0.5) q -= 0.1; else dim = Math.round(dim * 0.8); }
+        res(out); };
+      im.src = fr.result; };
+    fr.readAsDataURL(file);
+  });
+}
+
+async function viewExamsAsync(tok){
+  const v = $("#view"); v.innerHTML = '<div class="panel empty">جارٍ تحميل الامتحانات…</div>';
+  const [ex, asg, att] = await Promise.all([
+    sb.from("exams").select("id,title,subject,kind,status,opens_at,closes_at,duration_min,questions,created_at").order("created_at", {ascending:false}),
+    sb.from("exam_assignments").select("exam_id,student_id"),
+    sb.from("attempts").select("exam_id,student_id,submitted_at,score,total")]);
+  if(tok !== renderTok) return;
+  const err = ex.error || asg.error || att.error; if(err){ v.innerHTML = `<div class="panel empty">${esc(dbError(err))}</div>`; return; }
+  const list = ex.data.map(e => {
+    const n = asg.data.filter(a => a.exam_id === e.id).length;
+    const sub = att.data.filter(a => a.exam_id === e.id && a.submitted_at);
+    const avg = sub.length ? Math.round(sub.reduce((t, a) => t + (a.total ? a.score / a.total : 0), 0) / sub.length * 100) : null;
+    return {e, n, done:new Set(sub.map(a => a.student_id)).size, avg};
+  });
+  v.innerHTML = `<div class="hero"><div><h1>الامتحانات وأوراق العمل</h1><p class="lede">أنشئ امتحانًا أو ورقة تدريب، وأسندها لطلاب محددين، فيحلّونها من البوابة وتُصحَّح تلقائيًا.</p></div>
+    <a class="btn primary big" href="#exam-new">${ICON.plus}امتحان جديد</a></div>
+  ${list.length ? `<div class="wsgrid">${list.map(({e, n, done, avg}) => `<article class="panel wscard">
+    <div style="min-width:0"><div class="goal-area">${esc(e.subject || "")} · ${e.kind === "practice" ? "تدريب بتصحيح فوري" : "امتحان"}</div><h3>${esc(e.title)}</h3>
+      <div class="muted" style="font-size:13.5px">${(e.questions || []).length} أسئلة${e.duration_min ? " · " + e.duration_min + " دقيقة" : ""}${e.closes_at ? " · يغلق " + esc(fmtDT(e.closes_at)) : ""}</div></div>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center"><span class="tag ${EX_STATUS[e.status][1]}">${EX_STATUS[e.status][0]}</span><span class="tag num">سلّم ${done} من ${n}</span>${avg !== null ? `<span class="tag num">المتوسط ${avg}%</span>` : ""}</div>
+    <div class="wsact"><a class="btn sm primary" href="#results-${e.id}">النتائج</a><a class="btn sm" href="#exam-${e.id}">${ICON.edit}تعديل</a></div></article>`).join("")}</div>`
+    : '<div class="panel empty">لا توجد امتحانات بعد. ابدأ بـ «امتحان جديد».</div>'}`;
+}
+
+/* ----- editor ----- */
+function newExam(){ return {id:"", title:"", subject:"", outcome:"", instructions:"", images:[], questions:[], key:{}, kind:"exam", status:"draft", opens_at:null, closes_at:null, duration_min:null, shuffle:false, show_results:"answers", max_attempts:1, assign:{}, support:"مستقل", addFu:true, attempts:0}; }
+async function loadExamDraft(id, tok){
+  if(id === "new"){ ui.exDraft = Object.assign(newExam(), {_for:"new"}); return true; }
+  const [e, a, t] = await Promise.all([sb.from("exams").select("*").eq("id", id).maybeSingle(), sb.from("exam_assignments").select("*").eq("exam_id", id), sb.from("attempts").select("id", {count:"exact", head:true}).eq("exam_id", id)]);
+  if(tok !== renderTok) return false;
+  if(e.error || !e.data) return null;
+  const d = Object.assign(newExam(), e.data, {_for:id, assign:{}, attempts:t.count || 0});
+  (a.data || []).forEach(x => { d.assign[x.student_id] = {goal:x.goal_id || ""}; d.support = x.support || d.support; d.addFu = x.add_followup; });
+  ui.exDraft = d; return true;
+}
+function qEditHTML(q, i, d, err){
+  const k = d.key[q.id];
+  let body = "";
+  if(q.type === "mcq"){
+    body = q.options.map((o, j) => `<div class="optrow"><span class="ltr">${AR_L[j]}</span><input type="text" value="${esc(o)}" data-k="opt" data-q="${i}" data-o="${j}" aria-label="الخيار ${AR_L[j]} للسؤال ${i+1}">
+      <label class="okl"><input type="radio" name="ans-${q.id}" value="${j}" data-k="ans" data-q="${i}" ${k !== undefined && k !== "" && Number(k) === j ? "checked" : ""}> الصحيحة</label>
+      ${q.options.length > 2 ? `<button type="button" class="btn sm ghost" data-act="ex-delopt" data-q="${i}" data-o="${j}" aria-label="حذف الخيار ${AR_L[j]}">✕</button>` : ""}</div>`).join("")
+      + (q.options.length < 6 ? `<button type="button" class="btn sm ghost" style="margin-top:6px" data-act="ex-addopt" data-q="${i}">${ICON.plus}خيار</button>` : "");
+  } else if(q.type === "tf"){
+    body = `<div class="tfrow" role="radiogroup" aria-label="الإجابة الصحيحة للسؤال ${i+1}">${[["t","صح"],["f","خطأ"]].map(([v, l]) => `<label class="okl"><input type="radio" name="ans-${q.id}" value="${v}" data-k="ans" data-q="${i}" ${k === v ? "checked" : ""}> ${l}</label>`).join("")}</div>`;
+  } else if(q.type === "short"){
+    body = `<div class="field" style="margin-top:6px"><label for="sh-${q.id}">الإجابات المقبولة</label><input type="text" id="sh-${q.id}" value="${esc((k || []).join("، "))}" data-k="short" data-q="${i}" placeholder="مثال: الشاشة، الجالبوت"><span class="hint">افصل بينها بفاصلة. يُتجاهل التشكيل والهمزات و«ال» عند التصحيح.</span></div>`;
+  } else if(q.type === "num"){
+    body = `<div class="optrow" style="flex-wrap:wrap"><div class="field" style="flex:1;min-width:140px"><label for="nv-${q.id}">الإجابة الصحيحة</label><input type="text" inputmode="decimal" dir="ltr" id="nv-${q.id}" value="${k && k.v !== undefined && k.v !== null ? esc(k.v) : ""}" data-k="num" data-q="${i}"></div>
+      <div class="field" style="flex:1;min-width:140px"><label for="nt-${q.id}">هامش مقبول (±)</label><input type="text" inputmode="decimal" dir="ltr" id="nt-${q.id}" value="${k && k.tol ? esc(k.tol) : "0"}" data-k="tol" data-q="${i}"></div></div>`;
+  }
+  return `<div class="qed${err ? " has-err" : ""}" id="qe-${q.id}">
+    <div class="qed-h"><span class="wsr-n">${i+1}</span>
+      <label class="sr" for="qt-${q.id}">نوع السؤال</label><select id="qt-${q.id}" data-k="type" data-q="${i}" style="width:auto">${Object.entries(QTYPES).map(([v, l]) => `<option value="${v}" ${q.type === v ? "selected" : ""}>${l}</option>`).join("")}</select>
+      <label for="qp-${q.id}" class="muted" style="font-size:13px">الدرجة</label><input type="number" id="qp-${q.id}" min="0.5" step="0.5" value="${esc(q.points ?? 1)}" data-k="points" data-q="${i}" style="width:72px">
+      <span class="sp"></span>
+      <button type="button" class="btn sm ghost" data-act="ex-mvq" data-q="${i}" data-d="-1" ${i === 0 ? "disabled" : ""} aria-label="تحريك للأعلى">↑</button>
+      <button type="button" class="btn sm ghost" data-act="ex-mvq" data-q="${i}" data-d="1" ${i === d.questions.length - 1 ? "disabled" : ""} aria-label="تحريك للأسفل">↓</button>
+      <button type="button" class="btn sm ghost" style="color:var(--bad)" data-act="ex-delq" data-q="${i}">حذف</button></div>
+    <label class="sr" for="qx-${q.id}">نص السؤال ${i+1}</label>
+    <textarea id="qx-${q.id}" data-k="text" data-q="${i}" rows="2" placeholder="نص السؤال، أو مثلًا: السؤال ${i+1} في الورقة">${esc(q.text)}</textarea>
+    ${body}${err ? `<div class="err" style="margin-top:6px">${esc(err)}</div>` : ""}</div>`;
+}
+function assignHTML(d){
+  const groups = {};
+  state.students.forEach(s => { const k = s.grade + " / شعبة " + s.section; (groups[k] = groups[k] || []).push(s); });
+  const n = Object.keys(d.assign).length;
+  return `<div class="panel" style="margin-bottom:14px"><div class="section-h" style="margin:0 0 6px"><h2>الطلاب المكلَّفون (${n})</h2></div>
+    <p class="muted" style="font-size:13px;margin:0 0 10px">لا يرى الامتحان إلا الطلاب المحددون هنا. اربط كل طالب بهدف من خطته لتُسجَّل نتيجته متابعةً لذلك الهدف.</p>
+    ${Object.entries(groups).map(([g, list]) => `<div class="asg-g"><div class="asg-h"><b>${esc(g)}</b><button type="button" class="btn sm ghost" data-act="ex-asg-all" data-g="${esc(g)}">${list.every(s => d.assign[s.id]) ? "إلغاء الكل" : "تحديد الكل"}</button></div>
+      ${list.map(s => { const a = d.assign[s.id]; return `<div class="asg-row"><label class="okl" style="font-weight:600"><input type="checkbox" data-k="asg" data-sid="${s.id}" ${a ? "checked" : ""}> ${esc(s.name)}</label>
+        ${a ? `<select data-k="asg-goal" data-sid="${s.id}" aria-label="الهدف المرتبط لـ ${esc(s.name)}" style="width:auto;min-width:180px;max-width:100%"><option value="">بدون ربط بهدف</option>${s.iep.goals.map(g => `<option value="${g.id}" ${a.goal === g.id ? "selected" : ""}>${esc(g.area)}</option>`).join("")}</select>` : ""}</div>`; }).join("")}</div>`).join("") || '<div class="empty">أضف طلابًا أولًا.</div>'}
+    <div class="modal-b" style="padding:12px 0 0">
+      <div class="field"><label for="exSup">مستوى الدعم أثناء الحل</label><select id="exSup" data-k="support">${SUPPORT.map(x => `<option ${d.support === x ? "selected" : ""}>${esc(x)}</option>`).join("")}</select></div>
+      <div class="field"><label for="exAddFu">تسجيل النتيجة في سجل الهدف</label><select id="exAddFu" data-k="addFu"><option value="1" ${d.addFu ? "selected" : ""}>نعم، كمتابعة يومية</option><option value="0" ${d.addFu ? "" : "selected"}>لا، في أعمال الطالب فقط</option></select></div></div></div>`;
+}
+function viewExamEdit(){
+  const d = ui.exDraft; const errs = ui.exErrs || {};
+  return `<div class="crumbs"><a href="#exams">الامتحانات</a> / ${esc(d.title || "امتحان جديد")}</div>
+  <h1>${d.id ? "تعديل امتحان" : "امتحان جديد"}</h1>
+  ${d.attempts ? `<div class="preview" style="margin:8px 0 12px">حلّ هذا الامتحانَ ${d.attempts} طالب حتى الآن. إن عدّلت الإجابات الصحيحة يُعاد تصحيح المحاولات المسلَّمة تلقائيًا عند الحفظ.</div>` : '<p class="lede" style="margin-bottom:14px">اكتب الأسئلة أو ارفع صورة الورقة، وحدّد الإجابات الصحيحة، ثم اختر الطلاب وانشر.</p>'}
+  ${errs._list && errs._list.length ? `<div class="errbox" role="alert">راجع ما يلي قبل الحفظ:<ul>${errs._list.map(x => "<li>" + esc(x) + "</li>").join("")}</ul></div>` : ""}
+  <div class="panel" style="margin-bottom:14px"><div class="modal-b" style="padding:0">
+    <div class="field full"><label for="exTitle">العنوان <span aria-hidden="true" style="color:var(--bad)">*</span></label><input type="text" id="exTitle" data-k="title" value="${esc(d.title)}" class="${errs.title ? "invalid" : ""}"></div>
+    <div class="field"><label for="exSub">المادة</label><input type="text" id="exSub" list="exSubL" data-k="subject" value="${esc(d.subject || "")}" autocomplete="off"><datalist id="exSubL">${SUBJECTS.map(x => `<option value="${esc(x)}">`).join("")}</datalist></div>
+    <div class="field"><label for="exOut">ناتج التعلم</label><input type="text" id="exOut" data-k="outcome" value="${esc(d.outcome || "")}"></div>
+    <div class="field full"><label for="exIns">التعليمات أو نص القراءة</label><textarea id="exIns" data-k="instructions" rows="3">${esc(d.instructions || "")}</textarea></div>
+  </div></div>
+  <div class="panel" style="margin-bottom:14px"><h2>الإعدادات</h2><div class="modal-b" style="padding:0">
+    <div class="field full"><span style="font-size:13.5px;font-weight:600">النوع</span><div class="seg" role="radiogroup" aria-label="نوع الامتحان">
+      <button type="button" data-act="ex-kind" data-v="exam" aria-pressed="${d.kind === "exam"}">امتحان: يُصحَّح عند التسليم</button><button type="button" data-act="ex-kind" data-v="practice" aria-pressed="${d.kind === "practice"}">تدريب: تصحيح فوري بعد كل سؤال</button></div></div>
+    <div class="field"><label for="exOpen">يفتح في</label><input type="datetime-local" id="exOpen" data-k="opens_at" value="${esc(toLocalInput(d.opens_at))}"><span class="hint">اتركه فارغًا ليفتح فور النشر.</span></div>
+    <div class="field"><label for="exClose">يغلق في</label><input type="datetime-local" id="exClose" data-k="closes_at" value="${esc(toLocalInput(d.closes_at))}"><span class="hint">اتركه فارغًا ليبقى مفتوحًا حتى تغلقه.</span></div>
+    <div class="field"><label for="exDur">المدة بالدقائق</label><input type="number" id="exDur" min="1" data-k="duration_min" value="${esc(d.duration_min || "")}" placeholder="بدون حد"></div>
+    <div class="field"><label for="exMax">عدد المحاولات المسموحة</label><input type="number" id="exMax" min="1" max="10" data-k="max_attempts" value="${esc(d.max_attempts || 1)}"></div>
+    <div class="field"><label for="exShow">ما يراه الطالب بعد التسليم</label><select id="exShow" data-k="show_results">${Object.entries(SHOW).map(([k, l]) => `<option value="${k}" ${d.show_results === k ? "selected" : ""}>${l}</option>`).join("")}</select></div>
+    <div class="field" style="justify-content:flex-end"><label class="okl"><input type="checkbox" data-k="shuffle" ${d.shuffle ? "checked" : ""}> ترتيب عشوائي للأسئلة لكل طالب</label></div>
+  </div></div>
+  <div class="panel" style="margin-bottom:14px"><div class="section-h" style="margin:0"><h2>صور الورقة</h2><label class="btn sm" for="exImgIn">${ICON.plus}رفع صورة</label><input type="file" id="exImgIn" accept="image/*" multiple class="sr"></div>
+    <p class="muted" style="font-size:13px;margin:6px 0 0">حتى 3 صفحات. إن كانت الورقة PDF فالتقط صورة لكل صفحة. تُضغط الصور تلقائيًا.</p>
+    ${d.images.length ? `<div class="imgs">${d.images.map((src, j) => `<figure><img src="${src}" alt="صفحة ${j+1}"><button type="button" class="btn sm" data-act="ex-delimg" data-i="${j}" aria-label="حذف الصفحة ${j+1}">✕</button></figure>`).join("")}</div>` : ""}</div>
+  <div class="section-h"><h2>الأسئلة (${d.questions.length}) · مجموع الدرجات ${d.questions.reduce((t, q) => t + (Number(q.points) || 1), 0)}</h2></div>
+  ${d.questions.map((q, i) => qEditHTML(q, i, d, errs["q" + i])).join("") || '<div class="panel empty">لا توجد أسئلة بعد.</div>'}
+  <div class="panel" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px">
+    ${Object.entries(QTYPES).map(([v, l]) => `<button type="button" class="btn sm" data-act="ex-addq" data-type="${v}">${ICON.plus}${l}</button>`).join("")}
+    <span style="flex-basis:100%;height:0"></span>
+    <label for="exQuickN" class="muted" style="font-size:13.5px">إضافة سريعة لأسئلة الورقة المرفوعة:</label>
+    <input type="number" id="exQuickN" min="1" max="40" value="5" style="width:80px">
+    <button type="button" class="btn sm" data-act="ex-quick">أضف أسئلة اختيار (أ، ب، ج، د)</button></div>
+  ${assignHTML(d)}
+  <div class="edit-bar"><span class="tag ${EX_STATUS[d.status][1]}" style="align-self:center">${EX_STATUS[d.status][0]}</span>
+    ${d.status !== "open" ? `<button type="button" class="btn primary" data-act="ex-save" data-st="open">حفظ ونشر للطلاب</button><button type="button" class="btn" data-act="ex-save" data-st="${d.status}">حفظ ${d.status === "draft" ? "كمسودة" : "دون فتح"}</button>`
+      : `<button type="button" class="btn primary" data-act="ex-save" data-st="open">حفظ</button><button type="button" class="btn" data-act="ex-save" data-st="closed">حفظ وإغلاق</button>`}
+    <a class="btn ghost" href="#exams">إلغاء</a><span style="flex:1"></span>${d.id ? '<button type="button" class="btn danger" data-act="ex-delete">حذف</button>' : ""}</div>`;
+}
+function exInput(t){
+  const d = ui.exDraft; if(!d) return;
+  const k = t.dataset.k, i = Number(t.dataset.q), q = d.questions[i];
+  if(["title","subject","outcome","instructions","show_results"].includes(k)){ d[k] = t.value; return; }
+  if(k === "opens_at" || k === "closes_at"){ d[k] = fromLocalInput(t.value); return; }
+  if(k === "duration_min"){ d.duration_min = t.value ? Math.max(1, parseInt(t.value, 10) || 0) || null : null; return; }
+  if(k === "max_attempts"){ d.max_attempts = Math.min(10, Math.max(1, parseInt(t.value, 10) || 1)); return; }
+  if(k === "shuffle"){ d.shuffle = t.checked; return; }
+  if(k === "support"){ d.support = t.value; return; }
+  if(k === "addFu"){ d.addFu = t.value === "1"; return; }
+  if(k === "asg"){ if(t.checked) d.assign[t.dataset.sid] = {goal:""}; else delete d.assign[t.dataset.sid]; render(); return; }
+  if(k === "asg-goal"){ if(d.assign[t.dataset.sid]) d.assign[t.dataset.sid].goal = t.value; return; }
+  if(!q) return;
+  if(k === "text") q.text = t.value;
+  else if(k === "points") q.points = Number(t.value) > 0 ? Number(t.value) : 1;
+  else if(k === "opt") q.options[Number(t.dataset.o)] = t.value;
+  else if(k === "ans") d.key[q.id] = q.type === "mcq" ? Number(t.value) : t.value;
+  else if(k === "short") d.key[q.id] = t.value.split(/[،,\n]/).map(x => x.trim()).filter(Boolean);
+  else if(k === "num") d.key[q.id] = Object.assign({tol:0}, typeof d.key[q.id] === "object" ? d.key[q.id] : {}, {v:t.value.trim()});
+  else if(k === "tol") d.key[q.id] = Object.assign({v:""}, typeof d.key[q.id] === "object" ? d.key[q.id] : {}, {tol:t.value.trim()});
+  else if(k === "type"){ q.type = t.value; if(q.type === "mcq" && (!q.options || q.options.length < 2)) q.options = ["", "", "", ""]; delete d.key[q.id]; render(); }
+}
+function blankQ(type){ return {id:uid("q"), type, text:"", points:1, options: type === "mcq" ? ["", "", "", ""] : []}; }
+function numOf(v){ const x = parseFloat(String(v ?? "").replace(/[٠-٩]/g, c => "٠١٢٣٤٥٦٧٨٩".indexOf(c)).replace(/[٫,]/g, ".")); return isFinite(x) ? x : null; }
+function validateExam(d, publish){
+  const e = {_list:[]};
+  if(!d.title.trim()){ e.title = 1; e._list.push("اكتب عنوان الامتحان."); }
+  if(!d.questions.length) e._list.push("أضف سؤالًا واحدًا على الأقل.");
+  if(d.opens_at && d.closes_at && d.closes_at <= d.opens_at) e._list.push("موعد الإغلاق يجب أن يكون بعد موعد الفتح.");
+  if(publish && !Object.keys(d.assign).length) e._list.push("اختر طالبًا واحدًا على الأقل قبل النشر.");
+  d.questions.forEach((q, i) => {
+    const k = d.key[q.id]; let m = "";
+    if(!q.text.trim()) m = "اكتب نص السؤال.";
+    else if(q.type === "mcq"){ if(q.options.length < 2 || q.options.some(o => !o.trim())) m = "أكمل نصوص الخيارات."; else if(k === undefined || k === "" || !q.options[k]) m = "اختر الإجابة الصحيحة."; }
+    else if(q.type === "tf"){ if(k !== "t" && k !== "f") m = "اختر صح أو خطأ."; }
+    else if(q.type === "short"){ if(!k || !k.length) m = "اكتب إجابة مقبولة واحدة على الأقل."; }
+    else if(q.type === "num"){ if(!k || numOf(k.v) === null) m = "اكتب الإجابة الرقمية الصحيحة."; else if(String(k.tol ?? "").trim() !== "" && numOf(k.tol) === null) m = "الهامش يجب أن يكون رقمًا."; }
+    if(m){ e["q" + i] = m; e._list.push("السؤال " + (i+1) + ": " + m); }
+  });
+  return e;
+}
+async function saveExam(st, btn){
+  const d = ui.exDraft; const e = validateExam(d, st === "open");
+  if(e._list.length){ ui.exErrs = e; render(); window.scrollTo(0, 0); return; }
+  ui.exErrs = null;
+  const key = {};
+  d.questions.forEach(q => { const k = d.key[q.id]; key[q.id] = q.type === "num" ? {v:numOf(k.v), tol:numOf(k.tol) || 0} : k; if(q.type !== "mcq") q.options = []; });
+  const id = d.id || (crypto.randomUUID ? crypto.randomUUID() : uid("ex"));
+  const row = {id, title:d.title.trim(), subject:(d.subject || "").trim(), outcome:(d.outcome || "").trim(), instructions:(d.instructions || "").trim(), images:d.images, questions:d.questions.map(q => ({id:q.id, type:q.type, text:q.text.trim(), points:Number(q.points) || 1, options:q.options.map(o => o.trim())})),
+    key, kind:d.kind, status:st, opens_at:d.opens_at, closes_at:d.closes_at, duration_min:d.duration_min, shuffle:!!d.shuffle, show_results:d.show_results, max_attempts:d.max_attempts || 1, updated_at:new Date().toISOString()};
+  btn.disabled = true; toast("جارٍ الحفظ…");
+  try {
+    let r = await sb.from("exams").upsert(row); if(r.error) throw r.error;
+    r = await sb.from("exam_assignments").delete().eq("exam_id", id); if(r.error) throw r.error;
+    const rows = Object.entries(d.assign).map(([sid, a]) => ({exam_id:id, student_id:sid, goal_id:nz(a.goal), support:d.support, add_followup:!!d.addFu}));
+    if(rows.length){ r = await sb.from("exam_assignments").insert(rows); if(r.error) throw r.error; }
+    if(d.attempts){ r = await sb.rpc("regrade_exam", {p_exam_id:id}); if(r.error) throw r.error; }
+    ui.exDraft = null; toast(st === "open" ? "حُفظ ونُشر للطلاب المحددين." : "حُفظ."); go("results-" + id);
+    if(d.attempts) loadAll().catch(() => {});
+  } catch(err){ btn.disabled = false; toast(dbError(err)); }
+}
+async function addExamImages(files){
+  const d = ui.exDraft; if(!d) return;
+  const room = 3 - d.images.length; if(room <= 0){ toast("الحد الأقصى 3 صفحات."); return; }
+  const list = Array.from(files).filter(f => /^image\//.test(f.type)).slice(0, room);
+  if(!list.length){ toast("اختر ملف صورة (JPG أو PNG)."); return; }
+  toast("جارٍ تجهيز الصور…");
+  for(const f of list){ try { d.images.push(await compressImage(f)); } catch(err){ toast("تعذّرت قراءة إحدى الصور."); } }
+  if(ui.route === "exam") render();
+}
+
+/* ----- results ----- */
+async function viewResultsAsync(id, tok){
+  const v = $("#view"); v.innerHTML = '<div class="panel empty">جارٍ تحميل النتائج…</div>';
+  await sb.rpc("close_expired", {p_exam_id:id});
+  const [e, a, t] = await Promise.all([sb.from("exams").select("*").eq("id", id).maybeSingle(), sb.from("exam_assignments").select("*").eq("exam_id", id), sb.from("attempts").select("*").eq("exam_id", id).order("started_at")]);
+  if(tok !== renderTok) return;
+  const err = e.error || a.error || t.error; if(err || !e.data){ v.innerHTML = `<div class="panel empty">${esc(err ? dbError(err) : "لم يُعثر على الامتحان.")}</div>`; return; }
+  const ex = e.data; ui.resData = {ex, asg:a.data, att:t.data};
+  const rows = a.data.map(x => { const s = stu(x.student_id); const mine = t.data.filter(y => y.student_id === x.student_id); const sub = mine.filter(y => y.submitted_at); const last = sub[sub.length - 1]; const open = mine.find(y => !y.submitted_at); return {x, s, last, open, n:sub.length}; }).sort((p, q) => (p.s ? p.s.name : "").localeCompare(q.s ? q.s.name : "", "ar"));
+  const subs = rows.filter(r => r.last);
+  const avg = subs.length ? Math.round(subs.reduce((n, r) => n + (r.last.total ? r.last.score / r.last.total : 0), 0) / subs.length * 100) : null;
+  const qstats = ex.questions.map(q => { const xs = subs.map(r => r.last.detail && r.last.detail[q.id]).filter(Boolean); return {q, n:xs.length, ok:xs.filter(z => z.ok).length}; });
+  v.innerHTML = `<div class="crumbs"><a href="#exams">الامتحانات</a> / ${esc(ex.title)}</div>
+  <div class="hero"><div><h1>${esc(ex.title)}</h1><p class="lede">${ex.kind === "practice" ? "تدريب بتصحيح فوري" : "امتحان"} · ${ex.questions.length} أسئلة${ex.duration_min ? " · " + ex.duration_min + " دقيقة" : ""} · <span class="tag ${EX_STATUS[ex.status][1]}">${EX_STATUS[ex.status][0]}</span></p>
+    <div class="summary num"><span><b>${subs.length}</b> من ${rows.length} سلّموا</span>${avg !== null ? `<span>المتوسط <b>${avg}%</b></span>` : ""}<span>${ex.opens_at ? "يفتح " + esc(fmtDT(ex.opens_at)) : "مفتوح فور النشر"} · ${ex.closes_at ? "يغلق " + esc(fmtDT(ex.closes_at)) : "بلا موعد إغلاق"}</span></div></div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap"><a class="btn" href="#exam-${ex.id}">${ICON.edit}تعديل</a>${ex.status === "open" ? `<button class="btn" data-act="ex-status" data-id="${ex.id}" data-v="closed">إغلاق الامتحان</button>` : `<button class="btn primary" data-act="ex-status" data-id="${ex.id}" data-v="open">فتح للطلاب</button>`}<button class="btn" data-act="ex-csv">${ICON.down}تصدير CSV</button></div></div>
+  <section class="panel" style="margin-bottom:14px"><h2>نتائج الطلاب</h2><div class="tbl-wrap"><table class="gl"><thead><tr><th>الطالب</th><th>الحالة</th><th>الدرجة</th><th>وقت التسليم</th><th></th></tr></thead><tbody>
+    ${rows.map(r => `<tr><td><a href="#student-${r.x.student_id}">${esc(r.s ? r.s.name : "—")}</a></td>
+      <td>${r.last ? '<span class="tag ok">سلّم</span>' + (r.last.late ? ' <span class="tag late">متأخر</span>' : "") : r.open ? '<span class="tag due">يحل الآن</span>' : '<span class="tag">لم يبدأ</span>'}${r.n > 1 ? ` <span class="tag num">${r.n} محاولات</span>` : ""}</td>
+      <td class="res num">${r.last ? `${+r.last.score}/${+r.last.total} (${pct(+r.last.score, +r.last.total)}%)` : "—"}</td>
+      <td class="num">${r.last ? esc(fmtDT(r.last.submitted_at)) : "—"}</td>
+      <td style="white-space:nowrap">${r.last ? `<button class="btn sm" data-act="ex-detail" data-id="${r.last.id}">الإجابات</button>` : ""}${r.last || r.open ? ` <button class="btn sm ghost" data-act="ex-reset" data-id="${(r.open || r.last).id}">${r.open ? "إلغاء المحاولة" : "سماح بمحاولة جديدة"}</button>` : ""}</td></tr>`).join("") || '<tr><td colspan="5" class="empty">لم يُسنَد الامتحان لأي طالب. عدّله واختر الطلاب.</td></tr>'}
+  </tbody></table></div></section>
+  <section class="panel"><h2>تحليل الأسئلة</h2>${subs.length ? `<ul class="list">${qstats.map((x, i) => { const p = x.n ? Math.round(x.ok / x.n * 100) : 0; return `<li><span class="wsr-n">${i+1}</span><div class="grow"><div style="font-weight:600">${esc(x.q.text)}</div><div class="what">الإجابة الصحيحة: ${esc(wsAnswerText(x.q, ex.key[x.q.id]))}</div><div class="bar-q"><i style="width:${p}%;background:${p >= 70 ? "var(--pos)" : p >= 40 ? "var(--due)" : "var(--bad)"}"></i></div></div><span class="res num">${x.ok}/${x.n} · ${p}%</span></li>`; }).join("")}</ul>` : '<div class="empty">يظهر التحليل بعد أول تسليم.</div>'}</section>`;
+}
+function attemptDetail(id){
+  const R = ui.resData; const t = R && R.att.find(x => x.id === id); if(!t) return;
+  const s = stu(t.student_id);
+  lastFocus = document.activeElement;
+  $("#modalRoot").innerHTML = `<div class="scrim" data-act="scrim"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="mTitle">
+    <div class="modal-h"><h2 id="mTitle">إجابات ${esc(s ? s.name : "")}</h2><button type="button" class="x" data-act="close-modal" aria-label="إغلاق"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+    <div class="modal-b" style="display:block"><p class="num">الدرجة: <b>${+t.score}/${+t.total}</b> · ${t.correct} من ${t.qcount} أسئلة صحيحة · ${esc(fmtDT(t.submitted_at))}</p>
+    <ol class="wsr-sum">${R.ex.questions.map(q => { const d = (t.detail || {})[q.id] || {}; const a = d.a; const shown = a == null || a === "" ? "لم يُجب" : q.type === "mcq" ? AR_L[a] + ") " + ((q.options || [])[a] || "") : q.type === "tf" ? (a === "t" ? "صح" : "خطأ") : a;
+      return `<li class="${d.ok ? "ok" : "bad"}"><span>${d.ok ? "✓" : "✗"}</span><div><b>${esc(q.text)}</b><div class="wsr-meta">إجابته: ${esc(shown)}${d.ok ? "" : " · الصحيحة: " + esc(wsAnswerText(q, R.ex.key[q.id]))}</div></div></li>`; }).join("")}</ol></div>
+    <div class="modal-f"><button class="btn" data-act="close-modal">إغلاق</button></div></div></div>`;
+  document.addEventListener("keydown", escClose);
+}
+function exportCSV(){
+  const R = ui.resData; if(!R) return;
+  const q = v => '"' + String(v ?? "").replace(/"/g, '""') + '"';
+  const head = ["الطالب","الرقم المدرسي","الدرجة","من","النسبة","وقت التسليم","متأخر"].concat(R.ex.questions.map((x, i) => "س" + (i+1)));
+  const lines = [head.map(q).join(",")];
+  R.asg.forEach(a => { const s = stu(a.student_id); const sub = R.att.filter(t => t.student_id === a.student_id && t.submitted_at); const t = sub[sub.length - 1];
+    lines.push([s ? s.name : "", s ? s.schoolNo : "", t ? +t.score : "", t ? +t.total : "", t ? pct(+t.score, +t.total) + "%" : "", t ? t.submitted_at : "", t && t.late ? "نعم" : ""].concat(R.ex.questions.map(x => t && t.detail && t.detail[x.id] ? (t.detail[x.id].ok ? "✓" : "✗") : "")).map(q).join(",")); });
+  const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob(["\ufeff" + lines.join("\n")], {type:"text/csv"})); a.download = "نتائج-" + R.ex.title.replace(/[\\/:*?"<>|]+/g, "").slice(0, 40) + ".csv";
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 5000);
+}
+
+/* ---------- sign-in, staff approval, staff admin ---------- */
+const AUTH = { view:"login", msg:"", busy:false };
+function shellMode(mode){ document.body.dataset.mode = mode; }
+function authHTML(){
+  const v = AUTH.view;
+  const card = (title, inner) => `<div class="auth"><div class="auth-card panel"><h1>${title}</h1>${AUTH.msg ? `<div class="errbox" role="alert">${esc(AUTH.msg)}</div>` : ""}${inner}</div>
+    <a class="auth-switch" href="#portal">أنا طالب أو ولي أمر ←</a></div>`;
+  if(v === "pending") return card("بانتظار الموافقة", `<p>سُجّل حسابك <b dir="ltr">${esc(me.user && me.user.email || "")}</b>، وينتظر موافقة مسؤول النظام في المدرسة. بعد الموافقة أعد تحميل الصفحة.</p>
+    <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn primary" data-act="auth-recheck">تحقّق مرة أخرى</button><button class="btn" data-act="logout">تسجيل الخروج</button></div>`);
+  if(v === "recover") return card("كلمة مرور جديدة", `<form id="fRecover" class="auth-form" novalidate>
+    <div class="field"><label for="aNewPw">كلمة المرور الجديدة</label><input type="password" id="aNewPw" autocomplete="new-password" minlength="8" required></div>
+    <button class="btn primary" type="submit">حفظ كلمة المرور</button></form>`);
+  if(v === "signup") return card("حساب معلم جديد", `<form id="fSignup" class="auth-form" novalidate>
+    <div class="field"><label for="aName">الاسم كما يظهر في السجلات</label><input type="text" id="aName" required placeholder="مثال: أ. خالد سامح"></div>
+    <div class="field"><label for="aEmail">البريد الإلكتروني</label><input type="text" inputmode="email" dir="ltr" id="aEmail" autocomplete="email" required></div>
+    <div class="field"><label for="aPw">كلمة المرور</label><input type="password" id="aPw" autocomplete="new-password" minlength="8" required><span class="hint">8 أحرف على الأقل.</span></div>
+    <button class="btn primary" type="submit" ${AUTH.busy ? "disabled" : ""}>إنشاء الحساب</button>
+    <p class="muted" style="font-size:13px;margin:0">أول حساب يُنشأ يصبح مسؤول النظام. الحسابات التالية تنتظر موافقته.</p>
+    <button type="button" class="btn ghost" data-act="auth-view" data-v="login">لديّ حساب: تسجيل الدخول</button></form>`);
+  return card("دخول المعلمين", `<form id="fLogin" class="auth-form" novalidate>
+    <div class="field"><label for="aEmail">البريد الإلكتروني</label><input type="text" inputmode="email" dir="ltr" id="aEmail" autocomplete="username" required></div>
+    <div class="field"><label for="aPw">كلمة المرور</label><input type="password" id="aPw" autocomplete="current-password" required></div>
+    <button class="btn primary" type="submit" ${AUTH.busy ? "disabled" : ""}>دخول</button>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:space-between">
+      <button type="button" class="btn ghost" data-act="auth-view" data-v="signup">إنشاء حساب معلم</button>
+      <button type="button" class="btn ghost" data-act="auth-forgot">نسيت كلمة المرور</button></div></form>`);
+}
+function authErr(err){
+  const m = (err && err.message) || "";
+  if(/Invalid login credentials/i.test(m)) return "البريد أو كلمة المرور غير صحيحة.";
+  if(/Email not confirmed/i.test(m)) return "فعّل حسابك من الرسالة التي وصلت إلى بريدك أولًا.";
+  if(/already registered/i.test(m)) return "هذا البريد مسجّل بالفعل. سجّل الدخول.";
+  if(/Password should be/i.test(m)) return "كلمة المرور قصيرة؛ استخدم 8 أحرف على الأقل.";
+  if(/rate limit/i.test(m)) return "محاولات كثيرة. انتظر قليلًا ثم حاول.";
+  if(/Failed to fetch/i.test(m)) return "لا يوجد اتصال بالإنترنت أو إعداد الرابط غير صحيح.";
+  return m || "حدث خطأ غير متوقع.";
+}
+function showAuth(view, msg){ AUTH.view = view || AUTH.view; AUTH.msg = msg || ""; shellMode("auth"); $("#view").innerHTML = authHTML(); const f = $("#view input"); if(f) f.focus(); }
+document.addEventListener("submit", async e => {
+  const id = e.target.id; if(!["fLogin","fSignup","fRecover"].includes(id)) return;
+  e.preventDefault(); if(AUTH.busy) return;
+  const val = x => (($("#" + x) || {}).value || "").trim();
+  AUTH.busy = true; AUTH.msg = "";
+  try {
+    if(id === "fLogin"){
+      if(!val("aEmail") || !val("aPw")) throw {message:"اكتب البريد وكلمة المرور."};
+      const {error} = await sb.auth.signInWithPassword({email:val("aEmail"), password:$("#aPw").value});
+      if(error) throw error;
+      AUTH.busy = false; await afterSignIn();
+    } else if(id === "fSignup"){
+      if(!val("aName") || !val("aEmail") || $("#aPw").value.length < 8) throw {message:"أكمل الاسم والبريد، وكلمة مرور من 8 أحرف على الأقل."};
+      localStorage.setItem("athar-pending-name", val("aName"));
+      const {data, error} = await sb.auth.signUp({email:val("aEmail"), password:$("#aPw").value, options:{data:{name:val("aName")}, emailRedirectTo:location.origin + location.pathname}});
+      if(error) throw error;
+      AUTH.busy = false;
+      if(!data.session){ showAuth("login"); AUTH.msg = ""; $("#view .auth-card h1").insertAdjacentHTML("afterend", '<div class="preview" role="status" style="margin-bottom:10px">أُرسلت رسالة تفعيل إلى بريدك. افتحها ثم سجّل الدخول هنا.</div>'); return; }
+      await afterSignIn();
+    } else if(id === "fRecover"){
+      const pw = $("#aNewPw").value; if(pw.length < 8) throw {message:"8 أحرف على الأقل."};
+      const {error} = await sb.auth.updateUser({password:pw}); if(error) throw error;
+      AUTH.busy = false; toast("حُفظت كلمة المرور الجديدة."); history.replaceState(null, "", location.pathname + "#home"); await afterSignIn();
+    }
+  } catch(err){ AUTH.busy = false; showAuth(null, authErr(err)); }
+});
+async function afterSignIn(){
+  const {data:{user}} = await sb.auth.getUser();
+  if(!user){ showAuth("login"); return; }
+  me.user = user;
+  const name = localStorage.getItem("athar-pending-name") || (user.user_metadata && user.user_metadata.name) || "";
+  const {data, error} = await sb.rpc("staff_hello", {p_name:name});
+  if(error){ showAuth("login", "لم يكتمل إعداد قاعدة البيانات: شغّل ملف athar-supabase-setup.sql أولًا. (" + error.message + ")"); return; }
+  localStorage.removeItem("athar-pending-name");
+  me.staff = data;
+  if(!data.approved){ showAuth("pending"); return; }
+  shellMode("staff"); renderUser();
+  $("#view").innerHTML = '<div class="panel empty">جارٍ تحميل البيانات…</div>';
+  try { await loadAll(); } catch(err){ $("#view").innerHTML = `<div class="panel empty"><p>${esc(dbError(err))}</p><button class="btn" data-act="refresh">إعادة المحاولة</button></div>`; return; }
+  Object.assign(ui, parseHash()); if(ui.route === "report" && ui.sid) ui.report.sid = ui.sid;
+  if(!stu(ui.report.sid) && state.students[0]) ui.report.sid = state.students[0].id;
+  render();
+}
+function renderUser(){
+  const u = $("#userBox"); if(!u) return;
+  u.innerHTML = me.staff ? `<span class="who-name">${esc(me.staff.name || "")}${me.staff.role === "admin" ? ' <span class="tag">مسؤول</span>' : ""}</span><button class="btn sm ghost" data-act="logout">خروج</button>` : "";
+  $$("[data-admin]").forEach(el => el.hidden = !(me.staff && me.staff.role === "admin"));
+}
+async function viewStaffAsync(){
+  const v = $("#view");
+  v.innerHTML = '<div class="panel empty">جارٍ التحميل…</div>';
+  const {data, error} = await sb.from("staff").select("*").order("created_at");
+  if(error){ v.innerHTML = `<div class="panel empty">${esc(dbError(error))}</div>`; return; }
+  const link = location.origin + location.pathname;
+  v.innerHTML = `<div class="hero"><div><h1>المعلمون والصلاحيات</h1><p class="lede">يسجّل المعلم حسابه من صفحة الدخول، ثم توافق عليه هنا.</p></div></div>
+  <div class="panel" style="margin-bottom:14px">رابط النظام للمعلمين: <bdi dir="ltr" class="num">${esc(link)}</bdi><br>رابط بوابة الطلاب وأولياء الأمور: <bdi dir="ltr" class="num">${esc(link + "#portal")}</bdi></div>
+  <div class="panel"><ul class="list">${data.map(x => `<li><div class="avatar" aria-hidden="true">${esc(initials(x.name || x.email || "؟"))}</div><div class="grow"><div class="who">${esc(x.name || "—")} ${x.role === "admin" ? '<span class="tag">مسؤول</span>' : ""} ${x.approved ? '<span class="tag ok">معتمد</span>' : '<span class="tag due">بانتظار الموافقة</span>'}</div><div class="what" dir="ltr" style="text-align:right">${esc(x.email || "")}</div></div>
+    ${x.user_id === me.user.id ? '<span class="muted">أنت</span>' : `<div style="display:flex;gap:6px;flex-wrap:wrap">${x.approved ? `<button class="btn sm" data-act="staff-set" data-id="${x.user_id}" data-f="approved" data-v="0">إيقاف</button>` : `<button class="btn sm primary" data-act="staff-set" data-id="${x.user_id}" data-f="approved" data-v="1">موافقة</button>`}
+      ${x.role === "admin" ? `<button class="btn sm" data-act="staff-set" data-id="${x.user_id}" data-f="role" data-v="teacher">جعله معلمًا</button>` : `<button class="btn sm" data-act="staff-set" data-id="${x.user_id}" data-f="role" data-v="admin">جعله مسؤولًا</button>`}</div>`}</li>`).join("")}</ul></div>`;
+}
+async function staffSet(id, f, v){
+  const patch = f === "approved" ? {approved:v === "1"} : {role:v};
+  const {error} = await sb.from("staff").update(patch).eq("user_id", id);
+  if(error) toast(dbError(error)); else { toast("حُفظ."); viewStaffAsync(); }
+}
+
+/* ---------- portal access for a student (staff side) ---------- */
+function portalPanelHTML(s){
+  return `<div class="section-h"><h2>دخول البوابة</h2></div>
+  <div class="panel portal-box"><div class="grow">
+    <div>رقم الدخول: <b class="num">${esc(s.schoolNo)}</b> · الرمز السري: ${s.pinSet ? '<span class="tag ok">مُعَدّ</span>' : '<span class="tag late">غير مُعَدّ؛ لا يستطيع الدخول بعد</span>'}</div>
+    <div class="muted" style="font-size:13px;margin-top:4px">يدخل الطالب أو ولي أمره برقم الطالب والرمز السري، ويرى بيانات هذا الطالب وحده. لا يُحفظ الرمز في النظام بشكل مقروء، لذلك يظهر مرة واحدة عند إنشائه.</div>
+    <label class="okl" style="margin-top:8px"><input type="checkbox" data-act="toggle-viol" data-sid="${s.id}" ${s.portalViolations ? "checked" : ""}> إظهار المخالفات لولي الأمر في البوابة</label></div>
+    <button class="btn sm primary" data-act="new-pin" data-sid="${s.id}">${s.pinSet ? "إنشاء رمز جديد" : "إنشاء رمز دخول"}</button></div>`;
+}
+async function newPin(s, btn){
+  if(s.pinSet && !btn.dataset.armed){ btn.dataset.armed = "1"; btn.textContent = "اضغط مرة أخرى: سيتوقف الرمز القديم"; return; }
+  btn.disabled = true;
+  if(store.pending) await store.syncing;
+  const {data, error} = await sb.rpc("set_student_pin", {p_student_id:s.id});
+  btn.disabled = false;
+  if(error){ toast(dbError(error)); return; }
+  s.pinSet = true; render();
+  const link = location.origin + location.pathname + "#portal";
+  const msg = "السلام عليكم، هذه بيانات دخول بوابة «أثر» لمتابعة الطالب " + s.name + ":\nالرابط: " + link + "\nرقم الطالب: " + s.schoolNo + "\nالرمز السري: " + data + "\n\nيُرجى عدم مشاركة الرمز مع أحد.";
+  lastFocus = document.activeElement;
+  $("#modalRoot").innerHTML = `<div class="scrim" data-act="scrim"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="mTitle">
+    <div class="modal-h"><h2 id="mTitle">رمز الدخول الجديد</h2><button type="button" class="x" data-act="close-modal" aria-label="إغلاق"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+    <div class="modal-b" style="display:block"><p>${esc(s.name)} · رقم الطالب <b class="num">${esc(s.schoolNo)}</b></p>
+      <div class="pin" dir="ltr">${esc(data)}</div>
+      <p class="muted" style="font-size:13px">انسخ الرمز أو أرسله الآن؛ لن يظهر مرة أخرى. إن فُقد أنشئ رمزًا جديدًا.</p></div>
+    <div class="modal-f">${waNumber(s.phone) ? `<a class="btn wa" target="_blank" rel="noopener" href="https://wa.me/${waNumber(s.phone)}?text=${encodeURIComponent(msg)}">${ICON.wa}إرسال لولي الأمر على واتساب</a>` : ""}<button class="btn" id="pinCopy">نسخ الرسالة</button><span class="sp"></span><button class="btn" data-act="close-modal">تم</button></div></div></div>`;
+  document.addEventListener("keydown", escClose);
+  $("#pinCopy").addEventListener("click", () => { (navigator.clipboard ? navigator.clipboard.writeText(msg) : Promise.reject()).then(() => toast("نُسخت الرسالة."), () => window.prompt("انسخ الرسالة:", msg)); });
+}
+
+/* ================= Portal: students & parents ================= */
+const P = { token:null, data:null, tab:"exams", run:null, busy:false, msg:"" };
+try { P.token = sessionStorage.getItem("athar-portal"); } catch(e){}
+function pSetToken(t){ P.token = t; try { if(t) sessionStorage.setItem("athar-portal", t); else sessionStorage.removeItem("athar-portal"); } catch(e){} }
+function pErr(code){
+  return {locked:"محاولات كثيرة غير صحيحة. انتظر 15 دقيقة ثم حاول مرة أخرى.", invalid:"رقم الطالب أو الرمز السري غير صحيح.", expired:"انتهت الجلسة. ادخل من جديد.",
+    not_assigned:"هذا الامتحان غير مُسند لك.", closed:"الامتحان مغلق.", not_yet:"لم يحن موعد فتح الامتحان بعد.", no_attempts:"استنفدت عدد المحاولات المسموحة.",
+    empty:"الامتحان بلا أسئلة.", time_up:"انتهى الوقت، وسُلّمت إجاباتك تلقائيًا.", submitted:"سُلّم هذا الامتحان بالفعل.", not_found:"لم يُعثر على المحاولة."}[code] || "حدث خطأ. حاول مرة أخرى.";
+}
+async function pRpc(fn, args){
+  const {data, error} = await sb.rpc(fn, Object.assign({p_token:P.token}, args || {}));
+  if(error) throw {message:/Failed to fetch/i.test(error.message) ? "لا يوجد اتصال بالإنترنت." : "حدث خطأ في الخادم. حاول بعد قليل."};
+  if(data && data.ok === false && data.error === "expired"){ pSetToken(null); P.data = null; P.msg = pErr("expired"); go("portal"); throw {message:pErr("expired"), handled:true}; }
+  return data;
+}
+function pLoginHTML(){
+  return `<div class="auth"><div class="auth-card panel"><h1>بوابة الطالب وولي الأمر</h1>
+    <p class="muted" style="margin-top:-4px">ادخل برقم الطالب المدرسي والرمز السري الذي أرسلته لكم المدرسة.</p>
+    ${P.msg ? `<div class="errbox" role="alert">${esc(P.msg)}</div>` : ""}
+    <form id="fPortal" class="auth-form" novalidate>
+      <div class="field"><label for="pNo">رقم الطالب</label><input type="text" id="pNo" inputmode="numeric" dir="ltr" autocomplete="username" required></div>
+      <div class="field"><label for="pPin">الرمز السري</label><input type="password" id="pPin" inputmode="numeric" dir="ltr" autocomplete="current-password" required></div>
+      <button class="btn primary big" type="submit" ${P.busy ? "disabled" : ""}>دخول</button></form></div>
+    <a class="auth-switch" href="#home">دخول المعلمين ←</a></div>`;
+}
+document.addEventListener("submit", async e => {
+  if(e.target.id !== "fPortal") return;
+  e.preventDefault(); if(P.busy) return;
+  const no = $("#pNo").value.trim(), pin = $("#pPin").value.trim();
+  if(!no || !pin){ P.msg = "اكتب رقم الطالب والرمز السري."; renderPortal(); return; }
+  P.busy = true; P.msg = ""; renderPortal();
+  try {
+    const {data, error} = await sb.rpc("portal_login", {p_school_no:no, p_pin:pin});
+    if(error) throw {message:/Failed to fetch/i.test(error.message) ? "لا يوجد اتصال بالإنترنت." : "تعذّر الدخول. تأكد من إعداد النظام."};
+    P.busy = false;
+    if(!data.ok){ P.msg = pErr(data.error); renderPortal(); return; }
+    pSetToken(data.token); P.data = null; renderPortal();
+  } catch(err){ P.busy = false; P.msg = err.message; renderPortal(); }
+});
+async function pLoad(){ const d = await pRpc("portal_get"); if(d && d.ok){ P.data = d; return true; } return false; }
+function pStudentObj(){
+  const d = P.data;
+  return {followups:d.followups.map(f => ({...f, goalId:f.goal_id})), iep:{goals:d.goals}};
+}
+function pExamState(x){
+  const now = Date.now();
+  if(x.active) return {k:"active", label:"أكمل الحل", cls:"due"};
+  if(x.used >= x.max_attempts) return {k:"done", label:"سُلّم", cls:"ok"};
+  if(x.status !== "open" || (x.closes_at && now > Date.parse(x.closes_at))) return {k:"closed", label:x.used ? "سُلّم" : "مغلق", cls:x.used ? "ok" : "late"};
+  if(x.opens_at && now < Date.parse(x.opens_at)) return {k:"soon", label:"يفتح " + fmtDT(x.opens_at), cls:""};
+  return {k:"open", label:x.used ? "متاح: محاولة أخرى" : "متاح الآن", cls:"due"};
+}
+function pHomeHTML(){
+  const d = P.data, s = d.student, so = pStudentObj();
+  const pending = d.exams.filter(x => ["open","active"].includes(pExamState(x).k));
+  const tabs = [["exams","الامتحانات" + (pending.length ? " (" + pending.length + ")" : "")],["progress","التقدّم"],["works","الأعمال"],["behavior","السلوك"],["acc","التيسيرات"]];
+  let body = "";
+  if(P.tab === "exams") body = d.exams.length ? d.exams.map(x => { const st = pExamState(x); return `<article class="panel pexam"><div class="grow">
+      <div class="goal-area">${esc(x.subject || "")} · ${x.kind === "practice" ? "تدريب بتصحيح فوري" : "امتحان"}</div><h3>${esc(x.title)}</h3>
+      <div class="muted num" style="font-size:13.5px">${x.qcount} أسئلة${x.duration_min ? " · " + x.duration_min + " دقيقة" : ""}${x.closes_at ? " · يغلق " + esc(fmtDT(x.closes_at)) : ""}${x.max_attempts > 1 ? " · المحاولات " + x.used + " من " + x.max_attempts : ""}</div>
+      ${x.last ? `<div style="margin-top:6px">آخر نتيجة: ${scoreTag({correct:+x.last.score, total:+x.last.total})}</div>` : (x.used && x.show_results === "none" ? '<div class="muted" style="margin-top:6px;font-size:13.5px">سُلّم، وستُعلن النتيجة من المعلم.</div>' : "")}</div>
+      <div style="display:flex;flex-direction:column;gap:6px;align-items:flex-end"><span class="tag ${st.cls}">${esc(st.label)}</span>${["open","active"].includes(st.k) ? `<button class="btn primary" data-act="p-start" data-id="${x.id}">${st.k === "active" ? "أكمل" : "ابدأ"}</button>` : ""}</div></article>`; }).join("") : '<div class="panel empty">لا توجد امتحانات مُسندة حاليًا.</div>';
+  else if(P.tab === "progress") body = (d.goals.length ? d.goals.map(g => { const ms = goalMeasures(so, g.id), last = ms[ms.length - 1], lp = last ? pct(last.correct, last.total) : null; const bp = g.baseline && g.baseline.total ? pct(g.baseline.correct, g.baseline.total) : null;
+      return `<div class="goal"><div class="goal-area">${esc(g.area)}</div><p class="goal-text">${esc(g.text)}</p>${trailSVG(so, g)}
+      <div class="goal-stats"><span>البداية: <b class="num">${bp !== null ? bp + "%" : "—"}</b></span><span>آخر نتيجة: <b class="num">${last ? last.correct + "/" + last.total + " (" + lp + "%)" : "لا يوجد بعد"}</b></span><span>المعيار: <b class="num">${+g.target}%</b></span>${last ? `<span class="tag ${lp >= g.target ? "ok" : "due"}">${lp >= g.target ? "بلغ المعيار" : "يتقدّم نحو المعيار"}</span>` : ""}</div></div>`; }).join("") : '<div class="panel empty">لا توجد أهداف مسجلة.</div>')
+      + '<p class="muted" style="font-size:13px">في الرسم: المربع خط البداية، والنقاط القياسات من اليمين إلى اليسار، والخط المنقط المعيار المطلوب.</p>'
+      + (d.followups.length ? `<h2 style="margin-top:18px">آخر المتابعات</h2><div class="tbl-wrap panel" style="padding:4px 12px"><table class="gl" style="margin:0"><thead><tr><th>التاريخ</th><th>المادة</th><th>المهمة</th><th>النتيجة</th></tr></thead><tbody>${d.followups.slice().reverse().slice(0, 15).map(f => `<tr><td class="num">${esc(fmt(f.date))}</td><td>${esc(f.subject)}</td><td>${esc(f.task)}</td><td class="res num">${f.correct}/${f.total}</td></tr>`).join("")}</tbody></table></div>` : "");
+  else if(P.tab === "works") body = d.works.length ? d.works.map(w => `<div class="rec"><div class="rec-h"><b>${esc(w.title)}</b><span class="tag">${esc(w.type || "")}</span>${w.score ? scoreTag(w.score) : ""}<span class="muted num">${esc(fmt(w.date))}</span></div>${w.note ? "<p>" + esc(w.note) + "</p>" : ""}</div>`).join("") : '<div class="panel empty">لا توجد أعمال مسجلة.</div>';
+  else if(P.tab === "behavior") body = d.behavior.length ? d.behavior.map(b => `<div class="rec ${b.type}"><div class="rec-h"><span class="tag ${BEH[b.type].cls}">${BEH[b.type].label}</span><span class="muted num">${esc(fmt(b.date))}</span></div><p>${esc(b.descr)}</p>${b.action ? '<p><span class="lbl">ما قامت به المدرسة: </span>' + esc(b.action) + "</p>" : ""}</div>`).join("") : '<div class="panel empty">لا توجد ملاحظات سلوكية.</div>';
+  else body = d.accommodations.length ? `<div class="panel"><ul style="margin:0;padding-inline-start:20px">${d.accommodations.map(a => `<li><b>${esc(a.cat)}:</b> ${esc(a.text)}</li>`).join("")}</ul></div>` : '<div class="panel empty">لا توجد تيسيرات مسجلة.</div>';
+  return `<div class="hero" style="margin-bottom:10px"><div><h1>مرحبًا، ${esc(s.name)}</h1><p class="lede num">رقم الطالب ${esc(s.school_no)} · الصف ${esc(s.grade || "")} / شعبة ${esc(s.section || "")}${s.coordinator ? " · منسق الحالة " + esc(s.coordinator) : ""}</p></div></div>
+    <div class="tabs" role="tablist" aria-label="أقسام البوابة">${tabs.map(([k, l]) => `<button role="tab" aria-selected="${P.tab === k}" data-act="p-tab" data-k="${k}">${l}</button>`).join("")}</div>
+    <div role="tabpanel">${body}</div>`;
+}
+async function renderPortal(){
+  shellMode("portal"); renderPortalBar();
+  const v = $("#view");
+  if(!P.token){ v.innerHTML = pLoginHTML(); const f = $("#pNo"); if(f && !P.busy) f.focus(); return; }
+  if(ui.route === "pexam"){ return pRunExam(ui.exid); }
+  if(!P.data){ v.innerHTML = '<div class="panel empty">جارٍ التحميل…</div>'; try { await pLoad(); } catch(err){ if(!err.handled) v.innerHTML = `<div class="panel empty"><p>${esc(err.message)}</p><button class="btn" data-act="p-reload">إعادة المحاولة</button></div>`; return; } }
+  if(P.data && !P.tabSet){ P.tab = P.data.exams.some(x => ["open","active"].includes(pExamState(x).k)) ? "exams" : "progress"; P.tabSet = true; }
+  if(P.data) v.innerHTML = pHomeHTML();
+}
+function renderPortalBar(){
+  const u = $("#userBox"); if(!u) return;
+  u.innerHTML = P.token && P.data ? `<span class="who-name">${esc(P.data.student.name)}</span><button class="btn sm ghost" data-act="p-logout">خروج</button>` : "";
+}
+
+/* ----- taking an exam ----- */
+async function pRunExam(id){
+  const v = $("#view");
+  if(P.run && P.run.exam_id === id && $("#pRun")) return;
+  v.innerHTML = '<div class="panel empty">جارٍ فتح الامتحان…</div>';
+  let d;
+  try { d = await pRpc("portal_start", {p_exam_id:id}); } catch(err){ if(!err.handled) v.innerHTML = `<div class="panel empty"><p>${esc(err.message)}</p><a class="btn" href="#portal">العودة</a></div>`; return; }
+  if(!d.ok){ v.innerHTML = `<div class="panel empty"><p>${esc(pErr(d.error))}</p><a class="btn" href="#portal">العودة</a></div>`; P.data = null; return; }
+  const R = P.run = Object.assign(d, {ans:Object.assign({}, d.answers), checks:d.checks || {}, big:false, dirty:false, done:false, result:null,
+    offset:Date.parse(d.server_now) - Date.now(), saveTimer:null, tick:null});
+  v.innerHTML = '<div id="pRun"></div>';
+  pPaint();
+  if(R.deadline){ R.tick = setInterval(pTick, 1000); pTick(); }
+}
+function pLeft(){ const R = P.run; return R && R.deadline ? Date.parse(R.deadline) - (Date.now() + R.offset) : null; }
+function pTick(){
+  const R = P.run; if(!R || R.done){ return; }
+  const el = $("#pTimer"); const ms = pLeft();
+  if(ms === null) return;
+  if(ms <= 0){ clearInterval(R.tick); pSubmit(true); return; }
+  const m = Math.floor(ms / 60000), s = Math.floor(ms / 1000) % 60;
+  if(el){ el.textContent = m + ":" + pad(s); el.parentElement.classList.toggle("warn", ms < 120000); }
+}
+function pQInput(q, i, locked){
+  const R = P.run, cur = R.ans[q.id] == null ? "" : String(R.ans[q.id]), dis = locked ? " disabled" : "";
+  if(q.type === "mcq" || q.type === "tf"){
+    const opts = q.type === "tf" ? [["t","صح"],["f","خطأ"]] : q.options.map((o, j) => [String(j), AR_L[j] + ") " + o]);
+    return `<div class="wsr-opts" role="radiogroup" aria-label="خيارات السؤال ${i+1}">${opts.map(([v, l]) => `<label class="wsr-opt${cur === v ? " sel" : ""}"><input type="radio" name="pq-${q.id}" value="${v}" data-pq="${q.id}"${cur === v ? " checked" : ""}${dis}><span>${esc(l)}</span></label>`).join("")}</div>`;
+  }
+  return `<input class="wsr-in" type="text" autocomplete="off" ${q.type === "num" ? 'inputmode="decimal" dir="ltr" ' : ""}data-pq="${q.id}" value="${esc(cur)}" placeholder="${q.type === "num" ? "اكتب الرقم" : "اكتب إجابتك"}" aria-label="إجابة السؤال ${i+1}"${dis}>`;
+}
+function pPaint(keep){
+  const R = P.run, root = $("#pRun"); if(!R || !root) return;
+  const y = window.scrollY;
+  if(R.done){ root.innerHTML = pResultHTML(); window.scrollTo(0, 0); return; }
+  const prac = R.kind === "practice", n = R.questions.length;
+  const doneN = prac ? R.questions.filter(q => (R.checks[q.id] || {}).final).length : R.questions.filter(q => R.ans[q.id] != null && String(R.ans[q.id]).trim() !== "").length;
+  root.innerHTML = `<div class="wsr${R.big ? " big" : ""}">
+    <div class="wsr-head"><div style="min-width:0"><div class="wsr-sub">${esc(R.subject || "")} · ${prac ? "تدريب بتصحيح فوري" : "امتحان"}</div><h1>${esc(R.title)}</h1><div class="wsr-meta">${esc(P.data ? P.data.student.name : "")} · ${n} أسئلة</div></div>
+      <button type="button" class="btn sm" data-act="p-big" aria-pressed="${R.big}">${R.big ? "تصغير الخط" : "تكبير الخط"}</button></div>
+    <div class="pbar">${R.deadline ? `<span class="ptime">الوقت المتبقي <b id="pTimer" class="num" dir="ltr">—</b></span>` : ""}<span class="wsr-meta">${prac ? "أنجزت" : "أجبت عن"} ${doneN} من ${n}</span><span id="pSave" class="wsr-meta"></span></div>
+    <div class="wsr-prog" aria-hidden="true"><i style="width:${n ? doneN / n * 100 : 0}%"></i></div>
+    ${R.instructions ? `<div class="wsr-ins">${canSpeak() ? '<button type="button" class="wsr-say" data-act="p-say" data-q="_ins" aria-label="استمع إلى النص">🔊</button>' : ""}<div>${esc(R.instructions).replace(/\n/g, "<br>")}</div></div>` : ""}
+    ${(R.images || []).map((src, i) => `<figure class="wsr-img"><img src="${src}" alt="صفحة ${i+1} من الورقة"></figure>`).join("")}
+    ${R.questions.map((q, i) => { const c = R.checks[q.id] || {}; const locked = prac && c.final;
+      return `<section class="wsr-q${prac && c.final ? (c.ok ? " is-ok" : " is-bad") : ""}" id="pq-${q.id}">
+        <div class="wsr-qh"><span class="wsr-n">${i+1}</span><p>${esc(q.text)}${+q.points !== 1 ? ` <span class="tag num">${+q.points} درجات</span>` : ""}</p>${canSpeak() ? `<button type="button" class="wsr-say" data-act="p-say" data-q="${q.id}" aria-label="استمع إلى السؤال ${i+1}">🔊</button>` : ""}</div>
+        ${pQInput(q, i, locked)}
+        ${prac ? `<div class="wsr-row">${locked ? "" : `<button type="button" class="btn primary" data-act="p-check" data-q="${q.id}">تحقّق من إجابتي</button>`}<span class="wsr-msg" id="pm-${q.id}" role="alert"></span></div>
+          ${c.n ? (c.ok ? `<div class="wsr-fb ok" role="status">✓ إجابة صحيحة${c.n > 1 ? " في المحاولة الثانية" : ""}. أحسنت!</div>` : c.final ? `<div class="wsr-fb bad" role="status">✗ الإجابة الصحيحة: <b>${esc(c.correct_text || "")}</b></div>` : '<div class="wsr-fb try" role="status">✗ ليست صحيحة. فكّر مرة أخرى وجرّب.</div>') : ""}` : ""}
+      </section>`; }).join("")}
+    <div class="wsr-end">${prac ? `<button type="button" class="btn primary big" data-act="p-submit"${doneN < n ? " disabled" : ""}>إنهاء وعرض النتيجة</button>${doneN < n ? `<span class="wsr-meta">تحقّق من كل الأسئلة أولًا (${n - doneN} متبقية).</span>` : ""}`
+      : `<button type="button" class="btn primary big" data-act="p-submit">تسليم الإجابات</button><span class="wsr-meta">تُحفظ إجاباتك تلقائيًا أثناء الحل.</span>`}
+      <a class="btn ghost" href="#portal">الخروج والعودة لاحقًا</a></div></div>`;
+  if(keep !== false) window.scrollTo(0, y);
+  pTick();
+}
+function pResultHTML(){
+  const R = P.run, r = R.result;
+  const back = '<div class="wsr-after"><a class="btn primary" href="#portal">العودة إلى البوابة</a></div>';
+  if(!r || r.show === "none") return `<div class="wsr"><div class="wsr-result"><div class="wsr-ring" style="--p:100"><b>✓</b></div><h1>سُلّمت إجاباتك</h1><p class="wsr-meta">${esc(R.title)} · ستُعلن النتيجة من المعلم.</p></div>${back}</div>`;
+  const p = r.total ? Math.round(r.score / r.total * 100) : 0;
+  const msg = p >= 80 ? "عمل ممتاز! 🌟" : p >= 50 ? "أحسنت، وتقدّمك واضح 👍" : "بداية جيدة، وسنتدرّب معًا أكثر 💪";
+  return `<div class="wsr"><div class="wsr-result"><div class="wsr-ring" style="--p:${p}"><b>${+r.score}<small>من ${+r.total}</small></b></div><h1>${msg}</h1><p class="wsr-meta">${esc(R.title)} · ${r.correct} من ${r.qcount} أسئلة صحيحة · ${p}%</p></div>
+    ${r.show === "answers" && r.detail ? `<ol class="wsr-sum">${r.detail.map(x => `<li class="${x.ok ? "ok" : "bad"}"><span>${x.ok ? "✓" : "✗"}</span><div><b>${esc(x.text)}</b>${x.ok ? "" : `<div class="wsr-meta">الإجابة الصحيحة: ${esc(x.correct_text || "")}</div>`}</div></li>`).join("")}</ol>` : ""}${back}</div>`;
+}
+function canSpeak(){ return ("speechSynthesis" in window) && typeof SpeechSynthesisUtterance !== "undefined"; }
+function pSay(qid){
+  const R = P.run; if(!R) return; let t;
+  if(qid === "_ins") t = R.instructions; else { const q = R.questions.find(x => x.id === qid); if(!q) return; t = q.text; if(q.type === "mcq") t += ". " + q.options.map((o, i) => AR_L[i] + ": " + o).join(". "); if(q.type === "tf") t += ". صح أم خطأ؟"; }
+  try { speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(t); u.lang = "ar-SA"; u.rate = 0.9; speechSynthesis.speak(u); } catch(e){}
+}
+function pQueueSave(){
+  const R = P.run; if(!R || R.kind === "practice") return;
+  R.dirty = true; const el = $("#pSave"); if(el) el.textContent = "…";
+  clearTimeout(R.saveTimer); R.saveTimer = setTimeout(pSaveNow, 1200);
+}
+async function pSaveNow(){
+  const R = P.run; if(!R || !R.dirty || R.done) return;
+  R.dirty = false; const el = $("#pSave");
+  try { const d = await pRpc("portal_save", {p_attempt_id:R.attempt_id, p_answers:R.ans});
+    if(d.ok){ if(el) el.textContent = "حُفظت ✓"; }
+    else if(d.error === "time_up" || d.error === "submitted"){ pSubmit(true); }
+  } catch(err){ R.dirty = true; if(el) el.textContent = "لم تُحفظ بعد (تحقّق من الاتصال)"; }
+}
+async function pCheck(qid){
+  const R = P.run, q = R.questions.find(x => x.id === qid), v = R.ans[qid];
+  if(v == null || String(v).trim() === ""){ const m = $("#pm-" + qid); if(m) m.textContent = (q.type === "mcq" || q.type === "tf") ? "اختر إجابة أولًا." : "اكتب إجابتك أولًا."; return; }
+  const btn = $(`[data-act="p-check"][data-q="${qid}"]`); if(btn) btn.disabled = true;
+  try { const d = await pRpc("portal_check", {p_attempt_id:R.attempt_id, p_qid:qid, p_answer:String(v)});
+    if(!d.ok){ toast(pErr(d.error)); if(btn) btn.disabled = false; return; }
+    if(!d.already) R.checks[qid] = {n:d.n, ok:d.right, final:d.final, correct_text:d.correct_text};
+    pPaint(); const fb = $("#pq-" + qid + " .wsr-fb"); if(fb){ fb.setAttribute("tabindex", "-1"); fb.focus({preventScroll:true}); }
+  } catch(err){ if(btn) btn.disabled = false; toast(err.message); }
+}
+async function pSubmit(auto, btn){
+  const R = P.run; if(!R || R.done || R.submitting) return;
+  if(!auto && R.kind !== "practice"){
+    const empty = R.questions.filter(q => R.ans[q.id] == null || String(R.ans[q.id]).trim() === "").length;
+    if(btn && !btn.dataset.armed){ btn.dataset.armed = "1"; btn.textContent = empty ? `بقي ${empty} بلا إجابة. اضغط مرة أخرى للتسليم` : "اضغط مرة أخرى لتأكيد التسليم"; return; }
+  }
+  R.submitting = true; clearTimeout(R.saveTimer); clearInterval(R.tick);
+  if(btn) btn.disabled = true;
+  try { const d = await pRpc("portal_submit", {p_attempt_id:R.attempt_id, p_answers:R.kind === "practice" ? null : R.ans});
+    R.submitting = false;
+    if(!d.ok){ toast(pErr(d.error)); if(btn) btn.disabled = false; return; }
+    R.done = true; R.result = d; P.data = null; try { speechSynthesis.cancel(); } catch(e){}
+    if(auto) toast("انتهى الوقت، وسُلّمت إجاباتك تلقائيًا.");
+    pPaint(false);
+  } catch(err){ R.submitting = false; if(btn) btn.disabled = false; toast(err.message + " لم يُسلَّم بعد؛ حاول مرة أخرى."); if(auto) setTimeout(() => pSubmit(true), 5000); }
+}
+document.addEventListener("input", e => { const t = e.target; if(t.dataset && t.dataset.pq && P.run && t.type !== "radio"){ P.run.ans[t.dataset.pq] = t.value; const m = $("#pm-" + t.dataset.pq); if(m) m.textContent = ""; pQueueSave(); } });
+document.addEventListener("change", e => { const t = e.target; if(t.dataset && t.dataset.pq && P.run && t.type === "radio"){ P.run.ans[t.dataset.pq] = t.value; const g = t.closest(".wsr-opts"); if(g) g.querySelectorAll(".wsr-opt").forEach(l => l.classList.toggle("sel", l.contains(t))); pQueueSave(); } });
+document.addEventListener("keydown", e => { const t = e.target; if(e.key === "Enter" && t.dataset && t.dataset.pq && P.run && P.run.kind === "practice" && t.classList.contains("wsr-in")){ e.preventDefault(); pCheck(t.dataset.pq); } });
+window.addEventListener("beforeunload", e => { if(P.run && !P.run.done && P.run.dirty){ pSaveNow(); } if(store.pending){ e.preventDefault(); e.returnValue = ""; } });
+
+/* ---------- files: shell, saving, sharing ---------- */
+function fileHeader(sub){
+  const mark = ($(".brand .mark") || {}).outerHTML || "";
+  return `<header class="top" style="position:static"><div class="bar"><div class="brand">${mark}<span><b>أثر</b><small>${esc(sub)} · Ras Al Khaimah Secondary School for Boys</small><small class="by"><bdi>Designed &amp; developed by Khaled Sameh</bdi></small></span></div></div></header>`;
+}
+function fileShell(title, body, script){
+  const css = Array.from(document.querySelectorAll("style")).map(x => x.textContent).join("\n");
+  return '<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><title>' + esc(title) + '</title>'
+    + '<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&display=swap" rel="stylesheet">'
+    + '<style>' + css + '\nbody::before{display:none} main{padding-bottom:40px}</style></head><body>' + body
+    + (script ? '<script>' + script.replace(/<\/script/gi, "<\\/script") + '<\/script>' : '') + '</body></html>';
+}
+async function saveFile(name, html){
+  if(!(window.claude && window.claude.use)){
+    const a = document.createElement("a"); a.href = URL.createObjectURL(new Blob([html], {type:"text/html"})); a.download = name;
+    document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 5000); return true;
+  }
+  if(!downloadsApi) await Promise.race([downloadsReady, new Promise(r => setTimeout(r, 10000))]);
+  if(!downloadsApi){ toast("التنزيل غير متاح في هذا العرض. افتح الأداة من رابطها مباشرة."); return false; }
+  try { await downloadsApi.save({filename:name, data:new Blob([html], {type:"text/html"})}); return true; }
+  catch(err){ const c = err && err.code; toast(c === "declined" ? "أُلغي التنزيل." : c === "rate_limited" ? "فيه نافذة تنزيل مفتوحة بالفعل. أكملها ثم حاول." : "تعذّر التنزيل" + (c ? " (" + c + ")" : "") + "."); return false; }
+}
+function canShareFiles(){ try { return !!(navigator.canShare && navigator.canShare({files:[new File(["x"], "x.html", {type:"text/html"})]})); } catch(e){ return false; } }
+function openReadyModal(o){
+  lastFocus = document.activeElement;
+  const share = canShareFiles();
+  let logged = false; const once = () => { if(!logged){ logged = true; if(o.onSent) o.onSent(); } };
+  $("#modalRoot").innerHTML = `<div class="scrim" data-act="scrim"><div class="modal" role="dialog" aria-modal="true" aria-labelledby="mTitle">
+    <div class="modal-h"><h2 id="mTitle">${esc(o.title)}</h2><button type="button" class="x" data-act="close-modal" aria-label="إغلاق"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+    <div class="modal-b" style="display:block">${o.body}
+      <ol class="steps">${share ? "<li>اضغط «مشاركة الملف» واختر واتساب ثم المحادثة.</li>" : "<li>نزّل الملف على جهازك.</li><li>افتح محادثة واتساب، واضغط 📎 ثم «مستند»، واختر الملف.</li>"}<li>يفتح المستلم الملف في المتصفح (كروم أو سفاري)، دون حساب.</li></ol>
+      <p class="muted" style="font-size:13px;margin:0">اسم الملف: <bdi>${esc(o.name)}</bdi> · ${Math.max(1, Math.round(o.html.length / 1024))} ك.ب</p></div>
+    <div class="modal-f">${share ? `<button type="button" class="btn wa" id="rmShare">${ICON.wa}مشاركة الملف</button>` : ""}<button type="button" class="btn ${share ? "" : "primary"}" id="rmSave">${ICON.down}تنزيل الملف</button>
+      ${o.waNum ? `<a class="btn" id="rmWa" target="_blank" rel="noopener" href="https://wa.me/${o.waNum}?text=${encodeURIComponent(o.waText || "")}">${ICON.wa}فتح محادثة ${esc(o.waLabel || "ولي الأمر")}</a>` : ""}
+      <span class="sp"></span><button type="button" class="btn" data-act="close-modal">إغلاق</button></div></div></div>`;
+  document.addEventListener("keydown", escClose);
+  const sh = $("#rmShare"), sv = $("#rmSave"), wa = $("#rmWa");
+  if(sh) sh.addEventListener("click", () => {
+    navigator.share({files:[new File([o.html], o.name, {type:"text/html"})], text:o.waText || ""}).then(() => { once(); toast("تمت المشاركة."); })
+      .catch(err => { if(!err || err.name !== "AbortError") toast("تعذّرت المشاركة هنا. نزّل الملف وأرفقه يدويًا."); });
+  });
+  sv.addEventListener("click", async () => { sv.disabled = true; const ok = await saveFile(o.name, o.html); sv.disabled = false; if(ok){ once(); toast("نُزّل الملف. أرفقه في واتساب كمستند."); } });
+  if(wa) wa.addEventListener("click", once);
+  (sh || sv).focus();
+}
+
+/* ---------- parent file: one student only ---------- */
+function parentFileHTML(s, from, withViolations){
+  const to = today(), inP = d => d >= from && d <= to;
+  const goals = s.iep.goals.map(g => {
+    const ms = goalMeasures(s, g.id), last = ms[ms.length - 1], lp = last ? pct(last.correct, last.total) : null;
+    const bp = g.baseline && g.baseline.total ? pct(g.baseline.correct, g.baseline.total) : null;
+    return `<div class="goal"><div class="goal-area">${esc(g.area)}</div><p class="goal-text">${esc(g.text)}</p>${trailSVG(s, g)}
+      <div class="goal-stats"><span>البداية: <b class="num">${bp !== null ? bp + "%" : "—"}</b></span><span>آخر نتيجة: <b class="num">${last ? last.correct + "/" + last.total + " (" + lp + "%)" : "لا يوجد بعد"}</b>${last ? ' <span class="muted num">· ' + esc(fmt(last.date)) + '</span>' : ''}</span><span>المعيار: <b class="num">${g.target}%</b></span>${last ? `<span class="tag ${lp >= g.target ? "ok" : "due"}">${lp >= g.target ? "بلغ المعيار" : "يتقدّم نحو المعيار"}</span>` : ""}</div></div>`;
+  }).join("");
+  const fus = s.followups.filter(f => inP(f.date)).sort(sortDesc).slice(0, 15);
+  const works = s.works.filter(w => inP(w.date)).sort(sortDesc);
+  const beh = s.behavior.filter(b => inP(b.date) && (withViolations || b.type !== "violation")).sort(sortDesc);
+  const body = fileHeader("ملف ولي الأمر") + `<main class="pf">
+    <div class="hero" style="margin-bottom:6px"><div><h1>ملف متابعة الطالب ${esc(s.name)}</h1><p class="lede num">الصف ${esc(s.grade)} / شعبة ${esc(s.section)} · الفترة من ${esc(fmt(from))} إلى ${esc(fmt(to))}</p></div>
+      <button class="btn no-print" onclick="window.print()">طباعة</button></div>
+    <div class="pf-hello">ولي أمر الطالب الكريم${s.guardian ? "، " + esc(String(s.guardian).replace(/\s*\(.*?\)\s*/g, "")) : ""}، هذا الملف خاص بابنكم وحده، ويعرض تقدّمه في أهداف خطته الفردية وأعماله وملاحظات المدرسة خلال الفترة. لأي استفسار تواصلوا مع منسق الحالة ${esc(s.coordinator || "")}.</div>
+    <h2>أهداف الخطة الفردية وتقدّمها</h2>
+    <p class="muted" style="font-size:13px;margin-top:-6px">في الرسم: المربع خط البداية، والنقاط القياسات من اليمين إلى اليسار، والخط المنقط الأخضر المعيار المطلوب. النقطة المفرغة قياس بمستوى دعم مختلف.</p>
+    ${goals || '<div class="panel empty">لا توجد أهداف.</div>'}
+    <h2 style="margin-top:22px">آخر المتابعات</h2>
+    ${fus.length ? `<div class="tbl-wrap panel" style="padding:4px 12px"><table class="gl" style="margin:0"><thead><tr><th>التاريخ</th><th>المادة</th><th>المهمة</th><th>النتيجة</th></tr></thead><tbody>${fus.map(f => `<tr><td class="num">${esc(fmt(f.date))}</td><td>${esc(f.subject)}</td><td>${esc(f.task)}</td><td class="res num">${f.correct}/${f.total}</td></tr>`).join("")}</tbody></table></div>` : '<div class="panel empty">لا توجد متابعات في هذه الفترة.</div>'}
+    <h2 style="margin-top:22px">أعمال الطالب</h2>
+    ${works.length ? works.map(w => `<div class="rec"><div class="rec-h"><b>${esc(w.title)}</b><span class="tag">${esc(w.type)}</span>${w.score ? scoreTag(w.score) : ""}<span class="muted num">${esc(fmt(w.date))}</span></div>${w.note ? "<p>" + esc(w.note) + "</p>" : ""}</div>`).join("") : '<div class="panel empty">لا توجد أعمال في هذه الفترة.</div>'}
+    <h2 style="margin-top:22px">السلوك والملاحظات</h2>
+    ${beh.length ? beh.map(b => `<div class="rec ${b.type}"><div class="rec-h"><span class="tag ${BEH[b.type].cls}">${BEH[b.type].label}</span><span class="muted num">${esc(fmt(b.date))}</span></div><p>${esc(b.desc)}</p>${b.action ? '<p><span class="lbl">ما قامت به المدرسة: </span>' + esc(b.action) + '</p>' : ""}</div>`).join("") : '<div class="panel empty">لا توجد ملاحظات سلوكية في هذه الفترة.</div>'}
+    ${s.accommodations.length ? `<h2 style="margin-top:22px">التيسيرات المقدّمة</h2><div class="panel"><ul style="margin:0;padding-inline-start:20px">${s.accommodations.map(a => "<li>" + esc(a.text) + "</li>").join("")}</ul></div>` : ""}
+    <p class="muted" style="font-size:12.5px;margin-top:22px;text-align:center">أُعدّ في ${esc(fmt(today()))} · ملف خاص بولي أمر الطالب، يُرجى عدم مشاركته.</p>
+  </main>`;
+  return fileShell("ملف متابعة " + s.name, body, "");
+}
+function openParentFile(s){
+  openForm({
+    title:"ملف ولي الأمر: " + s.name, submitLabel:"تجهيز الملف",
+    fields:[
+      {name:"period", label:"الفترة", type:"select", options:[["30","آخر 30 يومًا"],["90","آخر 90 يومًا"],["plan","منذ بداية الخطة الفردية"]]},
+      {name:"viol", label:"المخالفات", type:"select", options:[["no","لا تُضمَّن"],["yes","تُضمَّن"]], hint:"السلوك الإيجابي والملاحظات يُضمَّنان دائمًا."}
+    ],
+    values:{period:"30", viol:"no"},
+    extraHTML:`<div class="preview">يحتوي الملف على بيانات <b>${esc(s.name)}</b> وحده: الأهداف وتقدّمها، والمتابعات، والأعمال ونتائج أوراق العمل، والسلوك، والتيسيرات. لا يحتوي على بيانات أي طالب آخر، ولا يحتاج ولي الأمر إلى حساب لفتحه.</div>`,
+    onSave: v => {
+      const from = v.period === "plan" ? s.iep.start : addDays(today(), -Number(v.period));
+      const html = parentFileHTML(s, from, v.viol === "yes");
+      closeModal();
+      openReadyModal({title:"ملف ولي الأمر جاهز", name:"ملف-متابعة-" + s.schoolNo + "-" + today() + ".html", html, waNum:waNumber(s.phone), waLabel:"ولي الأمر",
+        waText:"السلام عليكم، مرفق ملف متابعة الطالب " + s.name + " للفترة من " + fmt(from) + " إلى " + fmt(today()) + ". افتحوه في المتصفح.",
+        body:`<p>الملف خاص بالطالب <b>${esc(s.name)}</b> للفترة من <span class="num">${esc(fmt(from))}</span> إلى <span class="num">${esc(fmt(today()))}</span>، ويُرسل إلى ${esc(s.guardian || "ولي الأمر")} على <bdi dir="ltr">${esc(s.phone || "—")}</bdi>.</p>`,
+        onSent: () => { s.comms.push({id:uid("c"), date:today(), with:"ولي الأمر", channel:"رسالة واتساب", summary:"أُرسل ملف متابعة الطالب للفترة من " + fmt(from) + " إلى " + fmt(today()) + ".", action:"", by:"", status:"closed", followDate:""}); save(); }
+      });
+    }
+  });
+}
+
 /* ---------- toast ---------- */
 let toastTimer;
 function toast(msg, action){
@@ -1192,7 +2099,6 @@ function toast(msg, action){
 /* ---------- events ---------- */
 document.addEventListener("click", e => {
   const t = e.target.closest("[data-act]"); if(!t) return;
-  if(READONLY && !["scrim","close-modal","tab","beh-filter","clear-filters","preset","print","download-report"].includes(t.dataset.act)) { e.preventDefault(); return; }
   const a = t.dataset.act, s = t.dataset.sid ? stu(t.dataset.sid) : null;
   switch(a){
     case "scrim": if(e.target === t) closeModal(); break;
@@ -1219,19 +2125,56 @@ document.addEventListener("click", e => {
     case "preset": { const d = t.dataset.d; ui.report.to = today(); ui.report.from = d === "plan" ? stu(ui.report.sid).iep.start : addDays(today(), -Number(d)); render(); break; }
     case "print": { try { window.print(); } catch(err){ toast("الطباعة غير متاحة في هذا العرض. افتح الصفحة كاملة ثم اطبع."); break; }
       const rs = stu(ui.report.sid);
-      if(!READONLY && rs && waNumber(rs.phone)) setTimeout(() => toast("هل ترسل ملخص التقرير لولي الأمر على واتساب؟", {label:"إرسال على واتساب", fn:() => sendWa(rs)}), 300);
+      if(rs && waNumber(rs.phone)) setTimeout(() => toast("هل ترسل ملخص التقرير لولي الأمر على واتساب؟", {label:"إرسال على واتساب", fn:() => sendWa(rs)}), 300);
       break; }
     case "wa-log": logWa(s); toast("فُتح واتساب برسالة جاهزة، وسُجّل التواصل في ملف الطالب."); break;
     case "download-report": downloadReport(t); break;
-    case "reset-demo": if(t.dataset.armed){ state = seed(); save(); toast("أُعيدت البيانات الوهمية الأصلية."); render(); } else { t.dataset.armed = "1"; t.textContent = "اضغط مرة أخرى للتأكيد"; } break;
+    case "parent-file": openParentFile(s); break;
+    case "refresh": refreshData(); break;
+    case "load-demo": loadDemo(); break;
+    case "logout": sb.auth.signOut().then(() => { me.user = null; me.staff = null; state = {students:[]}; snap = new Map(); renderUser(); showAuth("login"); }); break;
+    case "auth-view": showAuth(t.dataset.v); break;
+    case "auth-recheck": afterSignIn(); break;
+    case "auth-forgot": { const em = ($("#aEmail") || {}).value; if(!em){ showAuth("login", "اكتب بريدك الإلكتروني أولًا ثم اضغط «نسيت كلمة المرور»."); break; } sb.auth.resetPasswordForEmail(em.trim(), {redirectTo:location.origin + location.pathname}).then(({error}) => toast(error ? authErr(error) : "أُرسل رابط تغيير كلمة المرور إلى بريدك.")); break; }
+    case "staff-set": staffSet(t.dataset.id, t.dataset.f, t.dataset.v); break;
+    case "new-pin": newPin(s, t); break;
+    case "toggle-viol": s.portalViolations = t.checked; save(); break;
+    case "ex-kind": ui.exDraft.kind = t.dataset.v; render(); break;
+    case "ex-addq": { const d = ui.exDraft; if(!d) break; const q = blankQ(t.dataset.type); d.questions.push(q); render(); const el = document.getElementById("qx-" + q.id); if(el){ el.scrollIntoView({block:"center"}); el.focus({preventScroll:true}); } break; }
+    case "ex-quick": { const d = ui.exDraft; if(!d) break; const n = Math.max(1, Math.min(40, parseInt(($("#exQuickN") || {}).value, 10) || 5)); const base = d.questions.length; for(let i = 0; i < n; i++){ const q = blankQ("mcq"); q.text = "السؤال " + (base + i + 1) + " في الورقة"; q.options = ["أ","ب","ج","د"]; d.questions.push(q); } render(); toast("أُضيف " + n + " أسئلة. اختر الإجابة الصحيحة لكل سؤال."); break; }
+    case "ex-delq": { const d = ui.exDraft; if(!d) break; const q = d.questions.splice(Number(t.dataset.q), 1)[0]; if(q) delete d.key[q.id]; render(); break; }
+    case "ex-mvq": { const d = ui.exDraft; if(!d) break; const i = Number(t.dataset.q), j = i + Number(t.dataset.d); if(j < 0 || j >= d.questions.length) break; const x = d.questions[i]; d.questions[i] = d.questions[j]; d.questions[j] = x; render(); break; }
+    case "ex-addopt": { const d = ui.exDraft; const q = d && d.questions[Number(t.dataset.q)]; if(q && q.options.length < 6){ q.options.push(""); render(); } break; }
+    case "ex-delopt": { const d = ui.exDraft; const q = d && d.questions[Number(t.dataset.q)]; if(!q) break; const o = Number(t.dataset.o); q.options.splice(o, 1); const k = d.key[q.id]; if(k === o) delete d.key[q.id]; else if(typeof k === "number" && k > o) d.key[q.id] = k - 1; render(); break; }
+    case "ex-delimg": { const d = ui.exDraft; if(!d) break; d.images.splice(Number(t.dataset.i), 1); render(); break; }
+    case "ex-asg-all": { const d = ui.exDraft; if(!d) break; const list = state.students.filter(x => x.grade + " / شعبة " + x.section === t.dataset.g); const all = list.every(x => d.assign[x.id]); list.forEach(x => { if(all) delete d.assign[x.id]; else if(!d.assign[x.id]) d.assign[x.id] = {goal:""}; }); render(); break; }
+    case "ex-save": saveExam(t.dataset.st, t); break;
+    case "ex-delete": if(t.dataset.armed){ const id = ui.exDraft.id; sb.from("exams").delete().eq("id", id).then(({error}) => { if(error) toast(dbError(error)); else { ui.exDraft = null; toast("حُذف الامتحان ومحاولاته ونتائجه."); loadAll().catch(() => {}); go("exams"); } }); } else { t.dataset.armed = "1"; t.textContent = "اضغط مرة أخرى: تُحذف كل المحاولات والنتائج"; } break;
+    case "ex-status": sb.from("exams").update({status:t.dataset.v, updated_at:new Date().toISOString()}).eq("id", t.dataset.id).then(({error}) => { if(error) toast(dbError(error)); else { toast(t.dataset.v === "open" ? "فُتح الامتحان للطلاب المحددين." : "أُغلق الامتحان."); render(); } }); break;
+    case "ex-detail": attemptDetail(t.dataset.id); break;
+    case "ex-csv": exportCSV(); break;
+    case "ex-reset": if(t.dataset.armed){ sb.from("attempts").delete().eq("id", t.dataset.id).then(({error}) => { if(error) toast(dbError(error)); else { toast("حُذفت المحاولة، ويمكن للطالب البدء من جديد."); loadAll().then(render).catch(() => render()); } }); } else { t.dataset.armed = "1"; t.textContent = "اضغط مرة أخرى للتأكيد"; } break;
+    case "p-tab": P.tab = t.dataset.k; renderPortal(); break;
+    case "p-start": go("portal-exam-" + t.dataset.id); break;
+    case "p-logout": pRpc("portal_logout").catch(() => {}); pSetToken(null); P.data = null; P.tabSet = false; P.msg = ""; renderPortalBar(); go("portal"); break;
+    case "p-reload": P.data = null; renderPortal(); break;
+    case "p-big": P.run.big = !P.run.big; pPaint(); break;
+    case "p-say": pSay(t.dataset.q); break;
+    case "p-check": pCheck(t.dataset.q); break;
+    case "p-submit": pSubmit(false, t); break;
   }
 });
-$("#storeChip").addEventListener("click", () => toast(storeText().long));
+$("#storeChip").addEventListener("click", () => { if(store.mode === "error") save(); else toast(storeText().long); });
 document.addEventListener("input", e => {
+  if(ui.route === "exam" && e.target.dataset && e.target.dataset.k && !["radio","checkbox","datetime-local","number"].includes(e.target.type) && e.target.tagName !== "SELECT"){ exInput(e.target); return; }
   const id = e.target.id;
   if(id === "q"){ ui.search = e.target.value; $("#rows").innerHTML = studentRows(); $("#resCount").textContent = filteredStudents().length + " من " + state.students.length + " طلاب"; }
 });
 document.addEventListener("change", e => {
+  if(ui.route === "exam"){
+    if(e.target.id === "exImgIn"){ addExamImages(e.target.files); e.target.value = ""; return; }
+    if(e.target.dataset && e.target.dataset.k && (["radio","checkbox","datetime-local","number"].includes(e.target.type) || e.target.tagName === "SELECT")){ exInput(e.target); return; }
+  }
   const id = e.target.id, v = e.target.value;
   if(id === "fg" || id === "fs"){ if(id==="fg") ui.grade = v; else ui.section = v; $("#rows").innerHTML = studentRows(); $("#resCount").textContent = filteredStudents().length + " من " + state.students.length + " طلاب"; }
   else if(id === "fuGoal"){ ui.fuGoal = v; render(); }
@@ -1278,16 +2221,20 @@ async function downloadReport(btn){
 }
 
 /* ---------- boot ---------- */
-state = READONLY ? null : lsRead();
-if(!state || !state.students){ state = seed(); } else migrate(state);
-store.mode = store.lsOk ? "browser" : "memory"; if(READONLY){ store.checking = false; }
-if(store.lsOk && !READONLY) lsWrite();
-Object.assign(ui, parseHash()); if(ui.sid && ui.route==="report") ui.report.sid = ui.sid;
-renderStoreChip();
-render();
-if(!READONLY) connectAccountStorage();
-initDownloads();
-window.__athar = { get state(){ return state; }, store, ui };
+const CONFIG = window.ATHAR_CONFIG || {};
+Object.assign(ui, parseHash());
+(async function boot(){
+  const v = $("#view");
+  if(!CONFIG.url || !CONFIG.anonKey || /YOUR-/.test(CONFIG.url + CONFIG.anonKey)){ shellMode("auth"); v.innerHTML = '<div class="auth"><div class="auth-card panel"><h1>النظام غير مُعَدّ بعد</h1><p>افتح ملف index.html، وضع رابط مشروع Supabase والمفتاح العام في قسم <b dir="ltr">ATHAR_CONFIG</b> أعلى الملف، ثم ارفعه من جديد.</p></div></div>'; return; }
+  if(!window.supabase || !window.supabase.createClient){ shellMode("auth"); v.innerHTML = '<div class="auth"><div class="auth-card panel"><h1>تعذّر التحميل</h1><p>لم تُحمَّل مكتبة الاتصال. تحقّق من الإنترنت ثم أعد تحميل الصفحة.</p><button class="btn" onclick="location.reload()">إعادة التحميل</button></div></div>'; return; }
+  sb = window.supabase.createClient(CONFIG.url, CONFIG.anonKey, {auth:{persistSession:true, autoRefreshToken:true, detectSessionInUrl:true}});
+  sb.auth.onAuthStateChange(ev => { if(ev === "PASSWORD_RECOVERY"){ AUTH.view = "recover"; if(!isPortalRoute(ui.route)) showAuth("recover"); } });
+  if(isPortalRoute(ui.route)){ render(); return; }
+  const {data:{session}} = await sb.auth.getSession();
+  if(AUTH.view === "recover") return;
+  if(session) await afterSignIn(); else showAuth("login");
+})();
+window.__athar = { get state(){ return state; }, store, ui, me, P };
 })();
 </script>
 </body>
