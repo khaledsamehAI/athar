@@ -445,9 +445,6 @@ const SUBJECTS = ["اللغة العربية","اللغة الإنجليزية",
 const STRATEGIES = ["تعليم مباشر بخطوات مرقمة","نمذجة ثم ممارسة موجهة","منظم بصري","جدول بصري","تعزيز رمزي","قراءة مشتركة","تقسيم المهمة","تعلم بالأقران","تقنية مساعدة","قصة اجتماعية"];
 const GRADES = ["التاسع","العاشر","الحادي عشر","الثاني عشر"];
 const SECTIONS = ["1","2","3","4"];
-const ALLOWED_DOMAIN = "moe.sch.ae"; // يجب أن يطابق public.email_allowed في قاعدة البيانات
-const DOMAIN_MSG = "التسجيل متاح فقط بالبريد الوزاري (…@" + ALLOWED_DOMAIN + ").";
-function emailAllowed(e){ return String(e || "").trim().toLowerCase().endsWith("@" + ALLOWED_DOMAIN); }
 const ACC_CATS = ["التدريس","التقييم","البيئة الصفية","التقنيات المساعدة"];
 const BEH = { positive:{label:"سلوك إيجابي",cls:"pos"}, note:{label:"ملاحظة",cls:"note"}, violation:{label:"مخالفة",cls:"bad"} };
 const WORK_TYPES = ["ورقة عمل","اختبار قصير","مشروع","تسجيل صوتي","عرض تقديمي","كتابة"];
@@ -607,9 +604,9 @@ const MAP = {
     from:r => ({id:r.id, date:nn(r.date), with:nn(r.with_whom), channel:nn(r.channel), summary:nn(r.summary), action:nn(r.action), by:nn(r.by_name), followDate:nn(r.follow_date), status:r.status})}
 };
 const KIDS = ["goals","accommodations","followups","works","behavior","comms"];
-const STU_COLS = "id,school_no,name,grade,section,category,dob,guardian,phone,coordinator,notes,iep_start,iep_review,iep_team,portal_violations,pin_set";
-function studentRow(s){ return {id:s.id, school_no:String(s.schoolNo || "").trim(), name:s.name, grade:s.grade, section:s.section, category:s.category, dob:nz(s.dob), guardian:s.guardian, phone:s.phone, coordinator:s.coordinator, notes:s.notes || "", iep_start:nz(s.iep && s.iep.start), iep_review:nz(s.iep && s.iep.review), iep_team:(s.iep && s.iep.team) || "", portal_violations:!!s.portalViolations}; }
-function studentFrom(r){ return {id:r.id, schoolNo:nn(r.school_no), name:nn(r.name), grade:nn(r.grade), section:nn(r.section), category:nn(r.category), dob:nn(r.dob), guardian:nn(r.guardian), phone:nn(r.phone), coordinator:nn(r.coordinator), notes:nn(r.notes), portalViolations:!!r.portal_violations, pinSet:!!r.pin_set,
+const STU_COLS = "id,school_no,name,grade,section,category,dob,guardian,phone,phone2,coordinator,notes,iep_start,iep_review,iep_team,portal_violations,pin_set";
+function studentRow(s){ return {id:s.id, school_no:String(s.schoolNo || "").trim(), name:s.name, grade:s.grade, section:s.section, category:s.category, dob:nz(s.dob), guardian:s.guardian, phone:s.phone, phone2:s.phone2 || "", coordinator:s.coordinator, notes:s.notes || "", iep_start:nz(s.iep && s.iep.start), iep_review:nz(s.iep && s.iep.review), iep_team:(s.iep && s.iep.team) || "", portal_violations:!!s.portalViolations}; }
+function studentFrom(r){ return {id:r.id, schoolNo:nn(r.school_no), name:nn(r.name), grade:nn(r.grade), section:nn(r.section), category:nn(r.category), dob:nn(r.dob), guardian:nn(r.guardian), phone:nn(r.phone), phone2:nn(r.phone2), coordinator:nn(r.coordinator), notes:nn(r.notes), portalViolations:!!r.portal_violations, pinSet:!!r.pin_set,
   iep:{start:nn(r.iep_start), review:nn(r.iep_review), team:nn(r.iep_team), goals:[]}, accommodations:[], followups:[], works:[], behavior:[], comms:[]}; }
 
 function rowsOf(st){
@@ -669,7 +666,6 @@ function dbError(err){
   if(err && err.code === "23505") return "الرقم المدرسي مستخدم لطالب آخر.";
   if(/JWT|jwt|session/i.test(m)) return "انتهت جلسة الدخول. سجّل الدخول من جديد.";
   if(/Failed to fetch|NetworkError|network/i.test(m)) return "لا يوجد اتصال بالإنترنت.";
-  if(/row-level security/i.test(m)) return "هذا الصف أو الشعبة ليس من صفوفك. اطلب من مسؤول النظام إضافته لك.";
   if(err && err.code === "42501") return "ليست لديك صلاحية لهذا الإجراء.";
   return "تعذّر الحفظ" + (m ? ": " + m : ".");
 }
@@ -712,6 +708,7 @@ function renderStoreChip(){
   const c = $("#storeChip"); if(!c) return;
   c.dataset.mode = store.mode === "error" ? "memory" : store.pending ? "browser" : store.mode === "online" ? "account" : "memory";
   $("#storeChipText").textContent = storeText().short; c.title = storeText().long;
+  c.hidden = store.mode === "online" && !store.pending;
 }
 async function refreshData(){
   if(store.pending){ toast("انتظر حتى ينتهي الحفظ."); return; }
@@ -833,17 +830,8 @@ const ICON = {
 /* ---------- Home ---------- */
 function storageNoteHTML(){
   const t = storeText();
-  return '<div class="storage-note" id="storageNote"><div class="grow"><b>' + esc(t.short) + '</b><br><span class="muted">' + esc(t.long) + (store.loadedAt ? ' آخر تحميل: ' + esc(new Date(store.loadedAt).toLocaleTimeString("ar-AE-u-nu-latn", {hour:"numeric", minute:"2-digit"})) + '.' : '') + '</span></div>' +
+  return '<div class="storage-note" id="storageNote"><div class="grow">' + (store.mode === "error" ? '<b style="color:var(--bad)">' + esc(t.long) + '</b>' : '') + '</div>' +
     '<button class="btn sm" data-act="refresh">تحديث البيانات</button>' + (!state.students.length && me.staff && me.staff.role === "admin" ? '<button class="btn sm" data-act="load-demo">تحميل بيانات تجريبية (5 طلاب)</button>' : '') + '</div>';
-}
-function isAdmin(){ return !!(me.staff && me.staff.role === "admin"); }
-function myClasses(){ return (me.staff && me.staff.classes) || []; }
-function classLabel(c){ return c.grade + (c.section ? " / شعبة " + c.section : " (كل الشعب)"); }
-function myGrades(){ if(isAdmin()) return GRADES; const g = myClasses().map(c => c.grade); return GRADES.filter(x => g.includes(x)).concat(g.filter(x => !GRADES.includes(x))); }
-function noClassesNote(){
-  if(!me.staff || isAdmin()) return "";
-  if(!myClasses().length) return '<div class="panel" role="status" style="margin-bottom:14px;border-color:var(--warn,#c80)"><b>لم تُحدَّد صفوفك بعد.</b> لن يظهر لك أي طالب حتى يضيف مسؤول النظام الصفوف التي تدرّسها من صفحة «المعلمون».</div>';
-  return '<div class="muted" style="margin-bottom:10px;font-size:13px">صفوفك: ' + myClasses().map(c => esc(classLabel(c))).join("، ") + '</div>';
 }
 function viewHome(){
   const dg = dueGoals(), oa = openActions();
@@ -852,7 +840,7 @@ function viewHome(){
   const recent = [];
   state.students.forEach(s => s.followups.forEach(f => recent.push({s,f})));
   recent.sort((a,b) => sortDesc(a.f,b.f));
-  return `${noClassesNote()}
+  return `
   <div class="hero">
     <div>
       <h1>مرحبًا ${esc(me.staff && me.staff.name ? me.staff.name : "")}</h1>
@@ -925,7 +913,7 @@ function studentRows(){
 }
 function viewStudents(){
   const grades = GRADES.filter(g => state.students.some(s => s.grade === g)).concat(GRADES.filter(g => !state.students.some(s=>s.grade===g)));
-  return `${noClassesNote()}
+  return `
   <div class="hero"><div><h1>الطلاب</h1><p class="lede">ابحث بالاسم أو الرقم المدرسي، وصفِّ النتائج بالصف والشعبة.</p></div>
     <button class="btn" data-act="add-student">${ICON.plus}إضافة طالب</button></div>
   <div class="filters" role="search">
@@ -981,7 +969,8 @@ function tabDataBase(s){
     <div><dt>تاريخ الميلاد</dt><dd class="num">${esc(fmt(s.dob))}</dd></div>
     <div><dt>فئة الإعاقة / الاحتياج</dt><dd>${esc(s.category)}</dd></div>
     <div><dt>ولي الأمر</dt><dd>${esc(s.guardian)}</dd></div>
-    <div><dt>رقم التواصل</dt><dd class="num" dir="ltr" style="text-align:right">${esc(s.phone)}</dd></div>
+    <div><dt>رقم الوالد</dt><dd class="num" dir="ltr" style="text-align:right">${esc(s.phone || "—")}</dd></div>
+    <div><dt>رقم الوالدة</dt><dd class="num" dir="ltr" style="text-align:right">${esc(s.phone2 || "—")}</dd></div>
     <div><dt>منسق الحالة</dt><dd>${esc(s.coordinator)}</dd></div>
     <div style="grid-column:1/-1"><dt>ملاحظات عامة</dt><dd style="font-weight:500">${esc(s.notes||"—")}</dd></div>
   </dl></div>
@@ -1154,7 +1143,6 @@ function waMessage(s, from, to){
   const fus = s.followups.filter(f => inP(f.date)).sort(sortAsc);
   const bc = {positive:0,note:0,violation:0}; s.behavior.filter(b => inP(b.date)).forEach(b => bc[b.type]++);
   const openN = s.behavior.filter(b => b.status==="open").length + s.comms.filter(c => c.status==="open").length;
-  const g = String(s.guardian||"").replace(/\s*\(.*?\)\s*/g,"").trim();
   const lines = s.iep.goals.map((goal,i) => {
     const ms = fus.filter(f => f.goalId === goal.id); const last = ms[ms.length-1];
     if(!last) return `${i+1}. ${goal.area}: لا يوجد قياس في هذه الفترة`;
@@ -1162,7 +1150,7 @@ function waMessage(s, from, to){
     return `${i+1}. ${goal.area}: آخر نتيجة ${last.correct}/${last.total} (${p}%)، والمعيار ${goal.target}% ${p >= goal.target ? "✅ بلغ المعيار" : "⏳ دون المعيار"}`;
   });
   return [
-    `السلام عليكم ${g ? "ولي أمر الطالب، الأستاذ " + g : "ولي أمر الطالب"}،`,
+    `السلام عليكم ولي أمر الطالب الكريم،`,
     ``,
     `ملخص تقرير متابعة الطالب *${s.name}*`,
     `${s.grade} / شعبة ${s.section}`,
@@ -1175,22 +1163,29 @@ function waMessage(s, from, to){
     `*إجراءات مفتوحة:* ${openN}`,
     ``,
     `التقرير الكامل متاح لدى المدرسة، ويسعدنا تواصلكم مع منسق الحالة ${s.coordinator || ""}.`.replace(" .","."),
-    `مدرسة رأس الخيمة الثانوية للبنين · برنامج أصحاب الهمم`,
-    ``,
-    `(نسخة تجريبية: بيانات وهمية)`
+    `مدرسة رأس الخيمة الثانوية للبنين · برنامج أصحاب الهمم`
   ].join("\n");
 }
-function waURL(s){ const n = waNumber(s.phone); return n ? "https://wa.me/" + n + "?text=" + encodeURIComponent(waMessage(s, ui.report.from, ui.report.to)) : null; }
-function logWa(s){
-  s.comms.push({id:uid("c"), date:today(), with:"ولي الأمر", channel:"رسالة واتساب", summary:"فُتح واتساب لإرسال ملخص تقرير الفترة من "+fmt(ui.report.from)+" إلى "+fmt(ui.report.to)+" إلى ولي الأمر على الرقم "+s.phone+".", action:"", by:"", status:"closed", followDate:""});
+/* parents' numbers: father (phone) and mother (phone2) */
+function parentNums(s){
+  return [{who:"f", label:"الوالد", raw:s.phone, num:waNumber(s.phone)}, {who:"m", label:"الوالدة", raw:s.phone2, num:waNumber(s.phone2)}].filter(x => x.num);
+}
+function waLinks(s, text, onClickAct){
+  return parentNums(s).map(p => `<a class="btn wa" target="_blank" rel="noopener" href="https://wa.me/${p.num}?text=${encodeURIComponent(text)}" ${onClickAct ? `data-act="${onClickAct}" data-sid="${s.id}" data-who="${p.who}"` : ""}>${ICON.wa}واتساب ${p.label}</a>`).join("");
+}
+function waURL(s, who){ const p = parentNums(s).find(x => x.who === who) || parentNums(s)[0]; return p ? "https://wa.me/" + p.num + "?text=" + encodeURIComponent(waMessage(s, ui.report.from, ui.report.to)) : null; }
+function logWa(s, who){
+  const p = parentNums(s).find(x => x.who === who) || parentNums(s)[0];
+  s.comms.push({id:uid("c"), date:today(), with:p && p.who === "m" ? "الوالدة" : "الوالد", channel:"رسالة واتساب", summary:"فُتح واتساب لإرسال ملخص تقرير الفترة من "+fmt(ui.report.from)+" إلى "+fmt(ui.report.to)+" إلى "+(p ? p.label + " على الرقم " + p.raw : "ولي الأمر")+".", action:"", by:"", status:"closed", followDate:""});
   save();
 }
 function sendWa(s){
-  const url = waURL(s);
-  if(!url){ toast("لا يوجد رقم صالح لولي الأمر. أضِفه من «تعديل بيانات الطالب»."); return; }
-  const w = window.open(url, "_blank"); try { if(w) w.opener = null; } catch(e){}
-  logWa(s);
-  toast(w === null ? "المتصفح منع فتح واتساب. استخدم زر «إرسال لولي الأمر على واتساب» في أعلى التقرير." : "فُتح واتساب برسالة جاهزة. اضغط إرسال هناك، وسُجّل التواصل في ملف الطالب.");
+  const ps = parentNums(s);
+  if(!ps.length){ toast("لا يوجد رقم صالح لولي الأمر. أضِفه من «تعديل بيانات الطالب»."); return; }
+  if(ps.length > 1){ const el = $(".wa-row"); if(el){ el.scrollIntoView({block:"center"}); el.classList.add("flash"); } toast("اختر لمن ترسل: واتساب الوالد أو واتساب الوالدة."); return; }
+  const w = window.open(waURL(s, ps[0].who), "_blank"); try { if(w) w.opener = null; } catch(e){}
+  logWa(s, ps[0].who);
+  toast(w === null ? "المتصفح منع فتح واتساب. استخدم زر واتساب في أعلى التقرير." : "فُتح واتساب برسالة جاهزة. اضغط إرسال هناك، وسُجّل التواصل في ملف الطالب.");
 }
 function viewReport(){
   const r = ui.report;
@@ -1202,8 +1197,8 @@ function viewReport(){
   return `
   <div class="no-print">
     <div class="hero" style="margin-bottom:6px"><div><h1>تقرير الطالب</h1><p class="lede">اختر الطالب والفترة، ثم اطبع التقرير أو نزّله.</p></div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn primary" data-act="print">${ICON.print}طباعة وإرسال لولي الأمر</button>${waNumber(s.phone) ? `<a class="btn wa" href="${esc(waURL(s))}" target="_blank" rel="noopener" data-act="wa-log" data-sid="${s.id}">${ICON.wa}واتساب فقط</a>` : `<button class="btn" disabled title="لا يوجد رقم لولي الأمر">${ICON.wa}لا يوجد رقم واتساب</button>`}<button class="btn" data-act="download-report" id="dlBtn">${ICON.down}تنزيل نسخة HTML</button></div></div>
-    <p class="muted" style="font-size:13px;margin:0 0 10px">بعد الطباعة يفتح واتساب برسالة جاهزة لولي الأمر (${esc(s.guardian||"—")} · <bdi dir="ltr">${esc(s.phone||"—")}</bdi>)، وتضغط أنت «إرسال». الإرسال التلقائي بدون ضغطة غير ممكن من صفحة ويب.</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn primary" data-act="print">${ICON.print}طباعة وإرسال لولي الأمر</button><span class="wa-row" style="display:contents">${parentNums(s).length ? waLinks(s, waMessage(s, r.from, r.to), "wa-log") : `<button class="btn" disabled title="لا يوجد رقم لولي الأمر">${ICON.wa}لا يوجد رقم واتساب</button>`}</span><button class="btn" data-act="download-report" id="dlBtn">${ICON.down}تنزيل نسخة HTML</button></div></div>
+    <p class="muted" style="font-size:13px;margin:0 0 10px">أزرار واتساب تفتح رسالة جاهزة بملخص التقرير (الوالد: <bdi dir="ltr">${esc(s.phone||"—")}</bdi> · الوالدة: <bdi dir="ltr">${esc(s.phone2||"—")}</bdi>)، وتضغط أنت «إرسال». الإرسال التلقائي بدون ضغطة غير ممكن من صفحة ويب.</p>
     <div class="rep-controls">
       <div class="field s"><label for="rs">الطالب</label><select id="rs">${state.students.map(x => `<option value="${x.id}" ${x.id===r.sid?"selected":""}>${esc(x.name)} (${esc(x.schoolNo)})</option>`).join("")}</select></div>
       <div class="field"><label for="rf">من</label><input type="date" id="rf" value="${r.from}" max="${r.to}"></div>
@@ -1375,12 +1370,12 @@ function goalForm(s, id){
 }
 function studentForm(s){
   const isNew = !s;
-  const v = s ? {...s} : {grade:(myClasses()[0] && !isAdmin() ? myClasses()[0].grade : "التاسع"), section:(myClasses()[0] && !isAdmin() && myClasses()[0].section) || "1", coordinator:"أ. خالد المرزوقي"};
+  const v = s ? {...s} : {grade:"التاسع", section:"1", coordinator:"أ. خالد المرزوقي"};
   openForm({
     title: isNew ? "إضافة طالب" : "تعديل بيانات الطالب",
     fields:[{name:"name",label:"اسم الطالب",required:true,full:true},{name:"schoolNo",label:"الرقم المدرسي",required:true},{name:"dob",label:"تاريخ الميلاد",type:"date"},
-      {name:"grade",label:"الصف",type:"select",options:myGrades()},{name:"section",label:"الشعبة",type:"select",options:SECTIONS.map(x=>[x,"شعبة "+x])},
-      {name:"category",label:"فئة الإعاقة / الاحتياج",required:true,full:true},{name:"guardian",label:"ولي الأمر"},{name:"phone",label:"رقم التواصل",type:"tel"},
+      {name:"grade",label:"الصف",type:"select",options:GRADES},{name:"section",label:"الشعبة",type:"select",options:SECTIONS.map(x=>[x,"شعبة "+x])},
+      {name:"category",label:"فئة الإعاقة / الاحتياج",required:true,full:true},{name:"guardian",label:"ولي الأمر"},{name:"phone",label:"رقم الوالد",type:"tel"},{name:"phone2",label:"رقم الوالدة",type:"tel"},
       {name:"coordinator",label:"منسق الحالة",full:true},{name:"notes",label:"ملاحظات عامة",type:"textarea",full:true}],
     values:v,
     validate: x => state.students.some(o => o.schoolNo === x.schoolNo && (!s || o.id !== s.id)) ? {schoolNo:"هذا الرقم المدرسي مسجل لطالب آخر."} : {},
@@ -1664,28 +1659,20 @@ function exportCSV(){
 }
 
 /* ---------- sign-in, staff approval, staff admin ---------- */
-const AUTH = { view:"login", msg:"", info:"", email:"", busy:false, otpReset:false };
+const AUTH = { view:"login", msg:"", busy:false };
 function shellMode(mode){ document.body.dataset.mode = mode; }
 function authHTML(){
   const v = AUTH.view;
-  const card = (title, inner) => `<div class="auth"><div class="auth-card panel"><h1>${title}</h1>${AUTH.msg ? `<div class="errbox" role="alert">${esc(AUTH.msg)}</div>` : ""}${AUTH.info ? `<div class="preview" role="status" style="margin-bottom:10px">${esc(AUTH.info)}</div>` : ""}${inner}</div>
+  const card = (title, inner) => `<div class="auth"><div class="auth-card panel"><h1>${title}</h1>${AUTH.msg ? `<div class="errbox" role="alert">${esc(AUTH.msg)}</div>` : ""}${inner}</div>
     <a class="auth-switch" href="#portal">أنا طالب أو ولي أمر ←</a></div>`;
   if(v === "pending") return card("بانتظار الموافقة", `<p>سُجّل حسابك <b dir="ltr">${esc(me.user && me.user.email || "")}</b>، وينتظر موافقة مسؤول النظام في المدرسة. بعد الموافقة أعد تحميل الصفحة.</p>
     <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn primary" data-act="auth-recheck">تحقّق مرة أخرى</button><button class="btn" data-act="logout">تسجيل الخروج</button></div>`);
-  const codeField = `<div class="field"><label for="aCode">رمز التحقق من البريد</label><input type="text" id="aCode" inputmode="numeric" autocomplete="one-time-code" dir="ltr" maxlength="10" required placeholder="123456"><span class="hint">أُرسل إلى <bdi dir="ltr">${esc(AUTH.email)}</bdi>. إن لم تجده فابحث في البريد غير الهام (Junk).</span></div>`;
-  if(v === "verify") return card("تفعيل الحساب", `<form id="fVerify" class="auth-form" novalidate>${codeField}
-    <button class="btn primary" type="submit" ${AUTH.busy ? "disabled" : ""}>تفعيل الحساب</button>
-    <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:space-between"><button type="button" class="btn ghost" data-act="auth-resend" data-v="signup">إرسال رمز جديد</button><button type="button" class="btn ghost" data-act="auth-view" data-v="login">رجوع لتسجيل الدخول</button></div></form>`);
-  if(v === "reset") return card("تغيير كلمة المرور", `<form id="fReset" class="auth-form" novalidate>${codeField}
-    <div class="field"><label for="aNewPw">كلمة المرور الجديدة</label><input type="password" id="aNewPw" autocomplete="new-password" minlength="8" required><span class="hint">8 أحرف على الأقل.</span></div>
-    <button class="btn primary" type="submit" ${AUTH.busy ? "disabled" : ""}>حفظ كلمة المرور</button>
-    <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:space-between"><button type="button" class="btn ghost" data-act="auth-resend" data-v="recovery">إرسال رمز جديد</button><button type="button" class="btn ghost" data-act="auth-view" data-v="login">رجوع لتسجيل الدخول</button></div></form>`);
   if(v === "recover") return card("كلمة مرور جديدة", `<form id="fRecover" class="auth-form" novalidate>
     <div class="field"><label for="aNewPw">كلمة المرور الجديدة</label><input type="password" id="aNewPw" autocomplete="new-password" minlength="8" required></div>
     <button class="btn primary" type="submit">حفظ كلمة المرور</button></form>`);
   if(v === "signup") return card("حساب معلم جديد", `<form id="fSignup" class="auth-form" novalidate>
     <div class="field"><label for="aName">الاسم كما يظهر في السجلات</label><input type="text" id="aName" required placeholder="مثال: أ. خالد سامح"></div>
-    <div class="field"><label for="aEmail">البريد الإلكتروني</label><input type="text" inputmode="email" dir="ltr" id="aEmail" autocomplete="email" required placeholder="name@${ALLOWED_DOMAIN}"><span class="hint">البريد الوزاري فقط. سيصلك عليه رمز تفعيل.</span></div>
+    <div class="field"><label for="aEmail">البريد الإلكتروني</label><input type="text" inputmode="email" dir="ltr" id="aEmail" autocomplete="email" required></div>
     <div class="field"><label for="aPw">كلمة المرور</label><input type="password" id="aPw" autocomplete="new-password" minlength="8" required><span class="hint">8 أحرف على الأقل.</span></div>
     <button class="btn primary" type="submit" ${AUTH.busy ? "disabled" : ""}>إنشاء الحساب</button>
     <p class="muted" style="font-size:13px;margin:0">أول حساب يُنشأ يصبح مسؤول النظام. الحسابات التالية تنتظر موافقته.</p>
@@ -1700,19 +1687,17 @@ function authHTML(){
 }
 function authErr(err){
   const m = (err && err.message) || "";
-  if(/email_domain_not_allowed|Database error saving new user/i.test(m)) return DOMAIN_MSG;
   if(/Invalid login credentials/i.test(m)) return "البريد أو كلمة المرور غير صحيحة.";
   if(/Email not confirmed/i.test(m)) return "فعّل حسابك من الرسالة التي وصلت إلى بريدك أولًا.";
-  if(/expired|invalid.*(otp|token)|otp.*(expired|invalid)|Token has expired/i.test(m)) return "الرمز غير صحيح أو انتهت صلاحيته. اطلب رمزًا جديدًا.";
   if(/already registered/i.test(m)) return "هذا البريد مسجّل بالفعل. سجّل الدخول.";
   if(/Password should be/i.test(m)) return "كلمة المرور قصيرة؛ استخدم 8 أحرف على الأقل.";
   if(/rate limit/i.test(m)) return "محاولات كثيرة. انتظر قليلًا ثم حاول.";
   if(/Failed to fetch/i.test(m)) return "لا يوجد اتصال بالإنترنت أو إعداد الرابط غير صحيح.";
   return m || "حدث خطأ غير متوقع.";
 }
-function showAuth(view, msg, info){ AUTH.view = view || AUTH.view; AUTH.msg = msg || ""; AUTH.info = info || ""; shellMode("auth"); $("#view").innerHTML = authHTML(); const f = $("#view input"); if(f) f.focus(); }
+function showAuth(view, msg){ AUTH.view = view || AUTH.view; AUTH.msg = msg || ""; shellMode("auth"); $("#view").innerHTML = authHTML(); const f = $("#view input"); if(f) f.focus(); }
 document.addEventListener("submit", async e => {
-  const id = e.target.id; if(!["fLogin","fSignup","fRecover","fVerify","fReset"].includes(id)) return;
+  const id = e.target.id; if(!["fLogin","fSignup","fRecover"].includes(id)) return;
   e.preventDefault(); if(AUTH.busy) return;
   const val = x => (($("#" + x) || {}).value || "").trim();
   AUTH.busy = true; AUTH.msg = "";
@@ -1720,29 +1705,16 @@ document.addEventListener("submit", async e => {
     if(id === "fLogin"){
       if(!val("aEmail") || !val("aPw")) throw {message:"اكتب البريد وكلمة المرور."};
       const {error} = await sb.auth.signInWithPassword({email:val("aEmail"), password:$("#aPw").value});
-      if(error && /Email not confirmed/i.test(error.message || "")){ AUTH.busy = false; AUTH.email = val("aEmail"); showAuth("verify", "", "حسابك غير مفعّل بعد. اكتب الرمز الذي وصلك على بريدك، أو اطلب رمزًا جديدًا."); return; }
       if(error) throw error;
       AUTH.busy = false; await afterSignIn();
     } else if(id === "fSignup"){
       if(!val("aName") || !val("aEmail") || $("#aPw").value.length < 8) throw {message:"أكمل الاسم والبريد، وكلمة مرور من 8 أحرف على الأقل."};
-      if(!emailAllowed(val("aEmail"))) throw {message:DOMAIN_MSG};
       localStorage.setItem("athar-pending-name", val("aName"));
       const {data, error} = await sb.auth.signUp({email:val("aEmail"), password:$("#aPw").value, options:{data:{name:val("aName")}, emailRedirectTo:location.origin + location.pathname}});
       if(error) throw error;
       AUTH.busy = false;
-      if(!data.session){ AUTH.email = val("aEmail"); showAuth("verify", "", "أرسلنا رمز تفعيل إلى بريدك الوزاري. اكتبه هنا لتفعيل حسابك."); return; }
+      if(!data.session){ showAuth("login"); AUTH.msg = ""; $("#view .auth-card h1").insertAdjacentHTML("afterend", '<div class="preview" role="status" style="margin-bottom:10px">أُرسلت رسالة تفعيل إلى بريدك. افتحها ثم سجّل الدخول هنا.</div>'); return; }
       await afterSignIn();
-    } else if(id === "fVerify"){
-      const code = val("aCode").replace(/\s/g, ""); if(!code) throw {message:"اكتب الرمز الذي وصلك على البريد."};
-      const {error} = await sb.auth.verifyOtp({email:AUTH.email, token:code, type:"signup"}); if(error) throw error;
-      AUTH.busy = false; AUTH.info = ""; await afterSignIn();
-    } else if(id === "fReset"){
-      const code = val("aCode").replace(/\s/g, ""), pw = $("#aNewPw").value;
-      if(!code) throw {message:"اكتب الرمز الذي وصلك على البريد."}; if(pw.length < 8) throw {message:"كلمة المرور 8 أحرف على الأقل."};
-      AUTH.otpReset = true;
-      const r1 = await sb.auth.verifyOtp({email:AUTH.email, token:code, type:"recovery"}); if(r1.error){ AUTH.otpReset = false; throw r1.error; }
-      const r2 = await sb.auth.updateUser({password:pw}); AUTH.otpReset = false; if(r2.error) throw r2.error;
-      AUTH.busy = false; AUTH.view = "login"; toast("حُفظت كلمة المرور الجديدة."); await afterSignIn();
     } else if(id === "fRecover"){
       const pw = $("#aNewPw").value; if(pw.length < 8) throw {message:"8 أحرف على الأقل."};
       const {error} = await sb.auth.updateUser({password:pw}); if(error) throw error;
@@ -1756,7 +1728,6 @@ async function afterSignIn(){
   me.user = user;
   const name = localStorage.getItem("athar-pending-name") || (user.user_metadata && user.user_metadata.name) || "";
   const {data, error} = await sb.rpc("staff_hello", {p_name:name});
-  if(error && /email_domain_not_allowed/.test(error.message || "")){ await sb.auth.signOut(); showAuth("login", DOMAIN_MSG); return; }
   if(error){ showAuth("login", "لم يكتمل إعداد قاعدة البيانات: شغّل ملف athar-supabase-setup.sql أولًا. (" + error.message + ")"); return; }
   localStorage.removeItem("athar-pending-name");
   me.staff = data;
@@ -1776,30 +1747,17 @@ function renderUser(){
 async function viewStaffAsync(){
   const v = $("#view");
   v.innerHTML = '<div class="panel empty">جارٍ التحميل…</div>';
-  const [{data, error}, tcr] = await Promise.all([sb.from("staff").select("*").order("created_at"), sb.from("teacher_classes").select("*")]);
-  if(error || tcr.error){ v.innerHTML = `<div class="panel empty">${esc(dbError(error || tcr.error))}</div>`; return; }
-  const tcs = tcr.data || [];
-  const classesHTML = x => x.role === "admin" ? '<div class="muted" style="font-size:13px;margin-top:4px">المسؤول يرى كل الصفوف.</div>' :
-    `<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:6px"><span class="muted" style="font-size:13px">الصفوف:</span>
-      ${tcs.filter(c => c.user_id === x.user_id).map(c => `<span class="tag">${esc(classLabel(c))} <button type="button" class="x" style="all:unset;cursor:pointer;margin-inline-start:4px" aria-label="إزالة ${esc(classLabel(c))}" data-act="tc-del" data-id="${x.user_id}" data-g="${esc(c.grade)}" data-s="${esc(c.section)}">×</button></span>`).join("") || '<span class="tag due">لا يوجد؛ لا يرى أي طالب</span>'}
-      <select id="tcg-${x.user_id}" aria-label="الصف">${GRADES.map(g => `<option>${g}</option>`).join("")}</select>
-      <select id="tcs-${x.user_id}" aria-label="الشعبة"><option value="">كل الشعب</option>${SECTIONS.map(s => `<option value="${s}">شعبة ${s}</option>`).join("")}</select>
-      <button type="button" class="btn sm" data-act="tc-add" data-id="${x.user_id}">إضافة صف</button></div>`;
+  const {data, error} = await sb.from("staff").select("*").order("created_at");
+  if(error){ v.innerHTML = `<div class="panel empty">${esc(dbError(error))}</div>`; return; }
   const link = location.origin + location.pathname;
-  v.innerHTML = `<div class="hero"><div><h1>المعلمون والصلاحيات</h1><p class="lede">يسجّل المعلم حسابه بالبريد الوزاري ويفعّله من بريده، ثم توافق عليه هنا وتحدّد الصفوف التي يدرّسها. لا يرى المعلم إلا طلاب صفوفه.</p></div></div>
+  v.innerHTML = `<div class="hero"><div><h1>المعلمون والصلاحيات</h1><p class="lede">يسجّل المعلم حسابه من صفحة الدخول، ثم توافق عليه هنا.</p></div></div>
   <div class="panel" style="margin-bottom:14px">رابط النظام للمعلمين: <bdi dir="ltr" class="num">${esc(link)}</bdi><br>رابط بوابة الطلاب وأولياء الأمور: <bdi dir="ltr" class="num">${esc(link + "#portal")}</bdi></div>
-  <div class="panel"><ul class="list">${data.map(x => `<li><div class="avatar" aria-hidden="true">${esc(initials(x.name || x.email || "؟"))}</div><div class="grow"><div class="who">${esc(x.name || "—")} ${x.role === "admin" ? '<span class="tag">مسؤول</span>' : ""} ${x.approved ? '<span class="tag ok">معتمد</span>' : '<span class="tag due">بانتظار الموافقة</span>'}</div><div class="what" dir="ltr" style="text-align:right">${esc(x.email || "")}</div>${classesHTML(x)}</div>
-    ${x.user_id === me.user.id ? '<span class="muted">أنت</span>' : `<div style="display:flex;gap:6px;flex-wrap:wrap">${x.approved ? `<button class="btn sm" data-act="staff-set" data-id="${x.user_id}" data-f="approved" data-v="0">إيقاف</button>
-      ${x.role === "admin" ? `<button class="btn sm" data-act="staff-set" data-id="${x.user_id}" data-f="role" data-v="teacher">جعله معلمًا</button>` : `<button class="btn sm" data-act="staff-set" data-id="${x.user_id}" data-f="role" data-v="admin">جعله مسؤولًا</button>`}` : `<button class="btn sm primary" data-act="staff-set" data-id="${x.user_id}" data-f="approved" data-v="1">موافقة</button>
-      <button class="btn sm" data-act="staff-set" data-id="${x.user_id}" data-f="approve-admin" data-v="1">جعله مسؤولًا</button>
-      <button class="btn sm" data-act="staff-remove" data-id="${x.user_id}">رفض وحذف الحساب</button>`}</div>`}</li>`).join("")}</ul></div>`;
-}
-async function tcChange(act, id, g, sec){
-  const r = act === "tc-add" ? await sb.from("teacher_classes").upsert({user_id:id, grade:g, section:sec}) : await sb.from("teacher_classes").delete().eq("user_id", id).eq("grade", g).eq("section", sec);
-  if(r.error) toast(dbError(r.error)); else { toast("حُفظ."); viewStaffAsync(); }
+  <div class="panel"><ul class="list">${data.map(x => `<li><div class="avatar" aria-hidden="true">${esc(initials(x.name || x.email || "؟"))}</div><div class="grow"><div class="who">${esc(x.name || "—")} ${x.role === "admin" ? '<span class="tag">مسؤول</span>' : ""} ${x.approved ? '<span class="tag ok">معتمد</span>' : '<span class="tag due">بانتظار الموافقة</span>'}</div><div class="what" dir="ltr" style="text-align:right">${esc(x.email || "")}</div></div>
+    ${x.user_id === me.user.id ? '<span class="muted">أنت</span>' : `<div style="display:flex;gap:6px;flex-wrap:wrap">${x.approved ? `<button class="btn sm" data-act="staff-set" data-id="${x.user_id}" data-f="approved" data-v="0">إيقاف</button>` : `<button class="btn sm primary" data-act="staff-set" data-id="${x.user_id}" data-f="approved" data-v="1">موافقة</button>`}
+      ${x.role === "admin" ? `<button class="btn sm" data-act="staff-set" data-id="${x.user_id}" data-f="role" data-v="teacher">جعله معلمًا</button>` : `<button class="btn sm" data-act="staff-set" data-id="${x.user_id}" data-f="role" data-v="admin">جعله مسؤولًا</button>`}</div>`}</li>`).join("")}</ul></div>`;
 }
 async function staffSet(id, f, v){
-  const patch = f === "approved" ? {approved:v === "1"} : f === "approve-admin" ? {approved:true, role:"admin"} : {role:v};
+  const patch = f === "approved" ? {approved:v === "1"} : {role:v};
   const {error} = await sb.from("staff").update(patch).eq("user_id", id);
   if(error) toast(dbError(error)); else { toast("حُفظ."); viewStaffAsync(); }
 }
@@ -1829,7 +1787,7 @@ async function newPin(s, btn){
     <div class="modal-b" style="display:block"><p>${esc(s.name)} · رقم الطالب <b class="num">${esc(s.schoolNo)}</b></p>
       <div class="pin" dir="ltr">${esc(data)}</div>
       <p class="muted" style="font-size:13px">انسخ الرمز أو أرسله الآن؛ لن يظهر مرة أخرى. إن فُقد أنشئ رمزًا جديدًا.</p></div>
-    <div class="modal-f">${waNumber(s.phone) ? `<a class="btn wa" target="_blank" rel="noopener" href="https://wa.me/${waNumber(s.phone)}?text=${encodeURIComponent(msg)}">${ICON.wa}إرسال لولي الأمر على واتساب</a>` : ""}<button class="btn" id="pinCopy">نسخ الرسالة</button><span class="sp"></span><button class="btn" data-act="close-modal">تم</button></div></div></div>`;
+    <div class="modal-f">${waLinks(s, msg)}<button class="btn" id="pinCopy">نسخ الرسالة</button><span class="sp"></span><button class="btn" data-act="close-modal">تم</button></div></div></div>`;
   document.addEventListener("keydown", escClose);
   $("#pinCopy").addEventListener("click", () => { (navigator.clipboard ? navigator.clipboard.writeText(msg) : Promise.reject()).then(() => toast("نُسخت الرسالة."), () => window.prompt("انسخ الرسالة:", msg)); });
 }
@@ -2071,16 +2029,16 @@ function openReadyModal(o){
       <ol class="steps">${share ? "<li>اضغط «مشاركة الملف» واختر واتساب ثم المحادثة.</li>" : "<li>نزّل الملف على جهازك.</li><li>افتح محادثة واتساب، واضغط 📎 ثم «مستند»، واختر الملف.</li>"}<li>يفتح المستلم الملف في المتصفح (كروم أو سفاري)، دون حساب.</li></ol>
       <p class="muted" style="font-size:13px;margin:0">اسم الملف: <bdi>${esc(o.name)}</bdi> · ${Math.max(1, Math.round(o.html.length / 1024))} ك.ب</p></div>
     <div class="modal-f">${share ? `<button type="button" class="btn wa" id="rmShare">${ICON.wa}مشاركة الملف</button>` : ""}<button type="button" class="btn ${share ? "" : "primary"}" id="rmSave">${ICON.down}تنزيل الملف</button>
-      ${o.waNum ? `<a class="btn" id="rmWa" target="_blank" rel="noopener" href="https://wa.me/${o.waNum}?text=${encodeURIComponent(o.waText || "")}">${ICON.wa}فتح محادثة ${esc(o.waLabel || "ولي الأمر")}</a>` : ""}
+      ${(o.waList || []).map(p => `<a class="btn rmWa" target="_blank" rel="noopener" href="https://wa.me/${p.num}?text=${encodeURIComponent(o.waText || "")}">${ICON.wa}محادثة ${esc(p.label)}</a>`).join("")}
       <span class="sp"></span><button type="button" class="btn" data-act="close-modal">إغلاق</button></div></div></div>`;
   document.addEventListener("keydown", escClose);
-  const sh = $("#rmShare"), sv = $("#rmSave"), wa = $("#rmWa");
+  const sh = $("#rmShare"), sv = $("#rmSave");
   if(sh) sh.addEventListener("click", () => {
     navigator.share({files:[new File([o.html], o.name, {type:"text/html"})], text:o.waText || ""}).then(() => { once(); toast("تمت المشاركة."); })
       .catch(err => { if(!err || err.name !== "AbortError") toast("تعذّرت المشاركة هنا. نزّل الملف وأرفقه يدويًا."); });
   });
   sv.addEventListener("click", async () => { sv.disabled = true; const ok = await saveFile(o.name, o.html); sv.disabled = false; if(ok){ once(); toast("نُزّل الملف. أرفقه في واتساب كمستند."); } });
-  if(wa) wa.addEventListener("click", once);
+  $$(".rmWa").forEach(a => a.addEventListener("click", once));
   (sh || sv).focus();
 }
 
@@ -2127,9 +2085,9 @@ function openParentFile(s){
       const from = v.period === "plan" ? s.iep.start : addDays(today(), -Number(v.period));
       const html = parentFileHTML(s, from, v.viol === "yes");
       closeModal();
-      openReadyModal({title:"ملف ولي الأمر جاهز", name:"ملف-متابعة-" + s.schoolNo + "-" + today() + ".html", html, waNum:waNumber(s.phone), waLabel:"ولي الأمر",
+      openReadyModal({title:"ملف ولي الأمر جاهز", name:"ملف-متابعة-" + s.schoolNo + "-" + today() + ".html", html, waList:parentNums(s),
         waText:"السلام عليكم، مرفق ملف متابعة الطالب " + s.name + " للفترة من " + fmt(from) + " إلى " + fmt(today()) + ". افتحوه في المتصفح.",
-        body:`<p>الملف خاص بالطالب <b>${esc(s.name)}</b> للفترة من <span class="num">${esc(fmt(from))}</span> إلى <span class="num">${esc(fmt(today()))}</span>، ويُرسل إلى ${esc(s.guardian || "ولي الأمر")} على <bdi dir="ltr">${esc(s.phone || "—")}</bdi>.</p>`,
+        body:`<p>الملف خاص بالطالب <b>${esc(s.name)}</b> للفترة من <span class="num">${esc(fmt(from))}</span> إلى <span class="num">${esc(fmt(today()))}</span>، ويمكن إرساله إلى الوالد (<bdi dir="ltr">${esc(s.phone || "—")}</bdi>) أو الوالدة (<bdi dir="ltr">${esc(s.phone2 || "—")}</bdi>).</p>`,
         onSent: () => { s.comms.push({id:uid("c"), date:today(), with:"ولي الأمر", channel:"رسالة واتساب", summary:"أُرسل ملف متابعة الطالب للفترة من " + fmt(from) + " إلى " + fmt(today()) + ".", action:"", by:"", status:"closed", followDate:""}); save(); }
       });
     }
@@ -2175,9 +2133,9 @@ document.addEventListener("click", e => {
     case "preset": { const d = t.dataset.d; ui.report.to = today(); ui.report.from = d === "plan" ? stu(ui.report.sid).iep.start : addDays(today(), -Number(d)); render(); break; }
     case "print": { try { window.print(); } catch(err){ toast("الطباعة غير متاحة في هذا العرض. افتح الصفحة كاملة ثم اطبع."); break; }
       const rs = stu(ui.report.sid);
-      if(rs && waNumber(rs.phone)) setTimeout(() => toast("هل ترسل ملخص التقرير لولي الأمر على واتساب؟", {label:"إرسال على واتساب", fn:() => sendWa(rs)}), 300);
+      if(rs && parentNums(rs).length) setTimeout(() => toast("هل ترسل ملخص التقرير لولي الأمر على واتساب؟", {label:"إرسال على واتساب", fn:() => sendWa(rs)}), 300);
       break; }
-    case "wa-log": logWa(s); toast("فُتح واتساب برسالة جاهزة، وسُجّل التواصل في ملف الطالب."); break;
+    case "wa-log": logWa(s, t.dataset.who); toast("فُتح واتساب برسالة جاهزة، وسُجّل التواصل في ملف الطالب."); break;
     case "download-report": downloadReport(t); break;
     case "parent-file": openParentFile(s); break;
     case "refresh": refreshData(); break;
@@ -2185,13 +2143,8 @@ document.addEventListener("click", e => {
     case "logout": sb.auth.signOut().then(() => { me.user = null; me.staff = null; state = {students:[]}; snap = new Map(); renderUser(); showAuth("login"); }); break;
     case "auth-view": showAuth(t.dataset.v); break;
     case "auth-recheck": afterSignIn(); break;
-    case "auth-forgot": { const em = ($("#aEmail") || {}).value; if(!em){ showAuth("login", "اكتب بريدك الإلكتروني أولًا ثم اضغط «نسيت كلمة المرور»."); break; } sb.auth.resetPasswordForEmail(em.trim(), {redirectTo:location.origin + location.pathname}).then(({error}) => { if(error){ showAuth("login", authErr(error)); return; } AUTH.email = em.trim(); showAuth("reset", "", "أرسلنا رمزًا إلى بريدك. اكتبه هنا مع كلمة المرور الجديدة."); }); break; }
-    case "auth-resend": { if(!AUTH.email){ showAuth("login"); break; } const p = t.dataset.v === "recovery" ? sb.auth.resetPasswordForEmail(AUTH.email, {redirectTo:location.origin + location.pathname}) : sb.auth.resend({type:"signup", email:AUTH.email, options:{emailRedirectTo:location.origin + location.pathname}}); p.then(({error}) => error ? showAuth(null, authErr(error)) : showAuth(null, "", "أُرسل رمز جديد. استخدم أحدث رسالة فقط.")); break; }
+    case "auth-forgot": { const em = ($("#aEmail") || {}).value; if(!em){ showAuth("login", "اكتب بريدك الإلكتروني أولًا ثم اضغط «نسيت كلمة المرور»."); break; } sb.auth.resetPasswordForEmail(em.trim(), {redirectTo:location.origin + location.pathname}).then(({error}) => toast(error ? authErr(error) : "أُرسل رابط تغيير كلمة المرور إلى بريدك.")); break; }
     case "staff-set": staffSet(t.dataset.id, t.dataset.f, t.dataset.v); break;
-    case "staff-remove": if(!t.dataset.armed){ t.dataset.armed = "1"; t.textContent = "اضغط مرة أخرى للتأكيد"; break; }
-      sb.rpc("remove_staff", {p_user_id:t.dataset.id}).then(({error}) => { if(error) toast(dbError(error)); else { toast("حُذف الحساب."); viewStaffAsync(); } }); break;
-    case "tc-add": tcChange("tc-add", t.dataset.id, document.getElementById("tcg-" + t.dataset.id).value, document.getElementById("tcs-" + t.dataset.id).value); break;
-    case "tc-del": tcChange("tc-del", t.dataset.id, t.dataset.g, t.dataset.s); break;
     case "new-pin": newPin(s, t); break;
     case "toggle-viol": s.portalViolations = t.checked; save(); break;
     case "ex-kind": ui.exDraft.kind = t.dataset.v; render(); break;
@@ -2283,7 +2236,7 @@ Object.assign(ui, parseHash());
   if(!CONFIG.url || !CONFIG.anonKey || /YOUR-/.test(CONFIG.url + CONFIG.anonKey)){ shellMode("auth"); v.innerHTML = '<div class="auth"><div class="auth-card panel"><h1>النظام غير مُعَدّ بعد</h1><p>افتح ملف index.html، وضع رابط مشروع Supabase والمفتاح العام في قسم <b dir="ltr">ATHAR_CONFIG</b> أعلى الملف، ثم ارفعه من جديد.</p></div></div>'; return; }
   if(!window.supabase || !window.supabase.createClient){ shellMode("auth"); v.innerHTML = '<div class="auth"><div class="auth-card panel"><h1>تعذّر التحميل</h1><p>لم تُحمَّل مكتبة الاتصال. تحقّق من الإنترنت ثم أعد تحميل الصفحة.</p><button class="btn" onclick="location.reload()">إعادة التحميل</button></div></div>'; return; }
   sb = window.supabase.createClient(CONFIG.url, CONFIG.anonKey, {auth:{persistSession:true, autoRefreshToken:true, detectSessionInUrl:true}});
-  sb.auth.onAuthStateChange(ev => { if(ev === "PASSWORD_RECOVERY" && !AUTH.otpReset){ AUTH.view = "recover"; if(!isPortalRoute(ui.route)) showAuth("recover"); } });
+  sb.auth.onAuthStateChange(ev => { if(ev === "PASSWORD_RECOVERY"){ AUTH.view = "recover"; if(!isPortalRoute(ui.route)) showAuth("recover"); } });
   if(isPortalRoute(ui.route)){ render(); return; }
   const {data:{session}} = await sb.auth.getSession();
   if(AUTH.view === "recover") return;
