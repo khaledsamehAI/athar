@@ -1791,6 +1791,7 @@ async function viewStaffAsync(){
   <div class="panel"><ul class="list">${data.map(x => `<li><div class="avatar" aria-hidden="true">${esc(initials(x.name || x.email || "؟"))}</div><div class="grow"><div class="who">${esc(x.name || "—")} ${x.role === "admin" ? '<span class="tag">مسؤول</span>' : ""} ${x.approved ? '<span class="tag ok">معتمد</span>' : '<span class="tag due">بانتظار الموافقة</span>'}</div><div class="what" dir="ltr" style="text-align:right">${esc(x.email || "")}</div>${classesHTML(x)}</div>
     ${x.user_id === me.user.id ? '<span class="muted">أنت</span>' : `<div style="display:flex;gap:6px;flex-wrap:wrap">${x.approved ? `<button class="btn sm" data-act="staff-set" data-id="${x.user_id}" data-f="approved" data-v="0">إيقاف</button>
       ${x.role === "admin" ? `<button class="btn sm" data-act="staff-set" data-id="${x.user_id}" data-f="role" data-v="teacher">جعله معلمًا</button>` : `<button class="btn sm" data-act="staff-set" data-id="${x.user_id}" data-f="role" data-v="admin">جعله مسؤولًا</button>`}` : `<button class="btn sm primary" data-act="staff-set" data-id="${x.user_id}" data-f="approved" data-v="1">موافقة</button>
+      <button class="btn sm" data-act="staff-set" data-id="${x.user_id}" data-f="approve-admin" data-v="1">جعله مسؤولًا</button>
       <button class="btn sm" data-act="staff-remove" data-id="${x.user_id}">رفض وحذف الحساب</button>`}</div>`}</li>`).join("")}</ul></div>`;
 }
 async function tcChange(act, id, g, sec){
@@ -1798,7 +1799,7 @@ async function tcChange(act, id, g, sec){
   if(r.error) toast(dbError(r.error)); else { toast("حُفظ."); viewStaffAsync(); }
 }
 async function staffSet(id, f, v){
-  const patch = f === "approved" ? {approved:v === "1"} : {role:v};
+  const patch = f === "approved" ? {approved:v === "1"} : f === "approve-admin" ? {approved:true, role:"admin"} : {role:v};
   const {error} = await sb.from("staff").update(patch).eq("user_id", id);
   if(error) toast(dbError(error)); else { toast("حُفظ."); viewStaffAsync(); }
 }
