@@ -445,6 +445,9 @@ const SUBJECTS = ["اللغة العربية","اللغة الإنجليزية",
 const STRATEGIES = ["تعليم مباشر بخطوات مرقمة","نمذجة ثم ممارسة موجهة","منظم بصري","جدول بصري","تعزيز رمزي","قراءة مشتركة","تقسيم المهمة","تعلم بالأقران","تقنية مساعدة","قصة اجتماعية"];
 const GRADES = ["التاسع","العاشر","الحادي عشر","الثاني عشر"];
 const SECTIONS = ["1","2","3","4"];
+const ALLOWED_DOMAIN = "moe.sch.ae"; // يجب أن يطابق public.email_allowed في قاعدة البيانات
+const DOMAIN_MSG = "التسجيل متاح فقط بالبريد الوزاري (…@" + ALLOWED_DOMAIN + ").";
+function emailAllowed(e){ return String(e || "").trim().toLowerCase().endsWith("@" + ALLOWED_DOMAIN); }
 const ACC_CATS = ["التدريس","التقييم","البيئة الصفية","التقنيات المساعدة"];
 const BEH = { positive:{label:"سلوك إيجابي",cls:"pos"}, note:{label:"ملاحظة",cls:"note"}, violation:{label:"مخالفة",cls:"bad"} };
 const WORK_TYPES = ["ورقة عمل","اختبار قصير","مشروع","تسجيل صوتي","عرض تقديمي","كتابة"];
@@ -666,6 +669,7 @@ function dbError(err){
   if(err && err.code === "23505") return "الرقم المدرسي مستخدم لطالب آخر.";
   if(/JWT|jwt|session/i.test(m)) return "انتهت جلسة الدخول. سجّل الدخول من جديد.";
   if(/Failed to fetch|NetworkError|network/i.test(m)) return "لا يوجد اتصال بالإنترنت.";
+  if(/row-level security/i.test(m)) return "هذا الصف أو الشعبة ليس من صفوفك. اطلب من مسؤول النظام إضافته لك.";
   if(err && err.code === "42501") return "ليست لديك صلاحية لهذا الإجراء.";
   return "تعذّر الحفظ" + (m ? ": " + m : ".");
 }
@@ -832,6 +836,15 @@ function storageNoteHTML(){
   return '<div class="storage-note" id="storageNote"><div class="grow"><b>' + esc(t.short) + '</b><br><span class="muted">' + esc(t.long) + (store.loadedAt ? ' آخر تحميل: ' + esc(new Date(store.loadedAt).toLocaleTimeString("ar-AE-u-nu-latn", {hour:"numeric", minute:"2-digit"})) + '.' : '') + '</span></div>' +
     '<button class="btn sm" data-act="refresh">تحديث البيانات</button>' + (!state.students.length && me.staff && me.staff.role === "admin" ? '<button class="btn sm" data-act="load-demo">تحميل بيانات تجريبية (5 طلاب)</button>' : '') + '</div>';
 }
+function isAdmin(){ return !!(me.staff && me.staff.role === "admin"); }
+function myClasses(){ return (me.staff && me.staff.classes) || []; }
+function classLabel(c){ return c.grade + (c.section ? " / شعبة " + c.section : " (كل الشعب)"); }
+function myGrades(){ if(isAdmin()) return GRADES; const g = myClasses().map(c => c.grade); return GRADES.filter(x => g.includes(x)).concat(g.filter(x => !GRADES.includes(x))); }
+function noClassesNote(){
+  if(!me.staff || isAdmin()) return "";
+  if(!myClasses().length) return '<div class="panel" role="status" style="margin-bottom:14px;border-color:var(--warn,#c80)"><b>لم تُحدَّد صفوفك بعد.</b> لن يظهر لك أي طالب حتى يضيف مسؤول النظام الصفوف التي تدرّسها من صفحة «المعلمون».</div>';
+  return '<div class="muted" style="margin-bottom:10px;font-size:13px">صفوفك: ' + myClasses().map(c => esc(classLabel(c))).join("، ") + '</div>';
+}
 function viewHome(){
   const dg = dueGoals(), oa = openActions();
   const weekCount = state.students.reduce((n,s) => n + s.followups.filter(f => daysBetween(f.date, today()) < 7 && daysBetween(f.date, today()) >= 0).length, 0);
@@ -839,7 +852,7 @@ function viewHome(){
   const recent = [];
   state.students.forEach(s => s.followups.forEach(f => recent.push({s,f})));
   recent.sort((a,b) => sortDesc(a.f,b.f));
-  return `
+  return `${noClassesNote()}
   <div class="hero">
     <div>
       <h1>مرحبًا ${esc(me.staff && me.staff.name ? me.staff.name : "")}</h1>
@@ -912,7 +925,7 @@ function studentRows(){
 }
 function viewStudents(){
   const grades = GRADES.filter(g => state.students.some(s => s.grade === g)).concat(GRADES.filter(g => !state.students.some(s=>s.grade===g)));
-  return `
+  return `${noClassesNote()}
   <div class="hero"><div><h1>الطلاب</h1><p class="lede">ابحث بالاسم أو الرقم المدرسي، وصفِّ النتائج بالصف والشعبة.</p></div>
     <button class="btn" data-act="add-student">${ICON.plus}إضافة طالب</button></div>
   <div class="filters" role="search">
@@ -1362,11 +1375,11 @@ function goalForm(s, id){
 }
 function studentForm(s){
   const isNew = !s;
-  const v = s ? {...s} : {grade:"التاسع", section:"1", coordinator:"أ. خالد المرزوقي"};
+  const v = s ? {...s} : {grade:(myClasses()[0] && !isAdmin() ? myClasses()[0].grade : "التاسع"), section:(myClasses()[0] && !isAdmin() && myClasses()[0].section) || "1", coordinator:"أ. خالد المرزوقي"};
   openForm({
     title: isNew ? "إضافة طالب" : "تعديل بيانات الطالب",
     fields:[{name:"name",label:"اسم الطالب",required:true,full:true},{name:"schoolNo",label:"الرقم المدرسي",required:true},{name:"dob",label:"تاريخ الميلاد",type:"date"},
-      {name:"grade",label:"الصف",type:"select",options:GRADES},{name:"section",label:"الشعبة",type:"select",options:SECTIONS.map(x=>[x,"شعبة "+x])},
+      {name:"grade",label:"الصف",type:"select",options:myGrades()},{name:"section",label:"الشعبة",type:"select",options:SECTIONS.map(x=>[x,"شعبة "+x])},
       {name:"category",label:"فئة الإعاقة / الاحتياج",required:true,full:true},{name:"guardian",label:"ولي الأمر"},{name:"phone",label:"رقم التواصل",type:"tel"},
       {name:"coordinator",label:"منسق الحالة",full:true},{name:"notes",label:"ملاحظات عامة",type:"textarea",full:true}],
     values:v,
@@ -1664,7 +1677,7 @@ function authHTML(){
     <button class="btn primary" type="submit">حفظ كلمة المرور</button></form>`);
   if(v === "signup") return card("حساب معلم جديد", `<form id="fSignup" class="auth-form" novalidate>
     <div class="field"><label for="aName">الاسم كما يظهر في السجلات</label><input type="text" id="aName" required placeholder="مثال: أ. خالد سامح"></div>
-    <div class="field"><label for="aEmail">البريد الإلكتروني</label><input type="text" inputmode="email" dir="ltr" id="aEmail" autocomplete="email" required></div>
+    <div class="field"><label for="aEmail">البريد الإلكتروني</label><input type="text" inputmode="email" dir="ltr" id="aEmail" autocomplete="email" required placeholder="name@${ALLOWED_DOMAIN}"><span class="hint">البريد الوزاري فقط. ستصلك رسالة تفعيل عليه.</span></div>
     <div class="field"><label for="aPw">كلمة المرور</label><input type="password" id="aPw" autocomplete="new-password" minlength="8" required><span class="hint">8 أحرف على الأقل.</span></div>
     <button class="btn primary" type="submit" ${AUTH.busy ? "disabled" : ""}>إنشاء الحساب</button>
     <p class="muted" style="font-size:13px;margin:0">أول حساب يُنشأ يصبح مسؤول النظام. الحسابات التالية تنتظر موافقته.</p>
@@ -1679,6 +1692,7 @@ function authHTML(){
 }
 function authErr(err){
   const m = (err && err.message) || "";
+  if(/email_domain_not_allowed|Database error saving new user/i.test(m)) return DOMAIN_MSG;
   if(/Invalid login credentials/i.test(m)) return "البريد أو كلمة المرور غير صحيحة.";
   if(/Email not confirmed/i.test(m)) return "فعّل حسابك من الرسالة التي وصلت إلى بريدك أولًا.";
   if(/already registered/i.test(m)) return "هذا البريد مسجّل بالفعل. سجّل الدخول.";
@@ -1701,6 +1715,7 @@ document.addEventListener("submit", async e => {
       AUTH.busy = false; await afterSignIn();
     } else if(id === "fSignup"){
       if(!val("aName") || !val("aEmail") || $("#aPw").value.length < 8) throw {message:"أكمل الاسم والبريد، وكلمة مرور من 8 أحرف على الأقل."};
+      if(!emailAllowed(val("aEmail"))) throw {message:DOMAIN_MSG};
       localStorage.setItem("athar-pending-name", val("aName"));
       const {data, error} = await sb.auth.signUp({email:val("aEmail"), password:$("#aPw").value, options:{data:{name:val("aName")}, emailRedirectTo:location.origin + location.pathname}});
       if(error) throw error;
@@ -1720,6 +1735,7 @@ async function afterSignIn(){
   me.user = user;
   const name = localStorage.getItem("athar-pending-name") || (user.user_metadata && user.user_metadata.name) || "";
   const {data, error} = await sb.rpc("staff_hello", {p_name:name});
+  if(error && /email_domain_not_allowed/.test(error.message || "")){ await sb.auth.signOut(); showAuth("login", DOMAIN_MSG); return; }
   if(error){ showAuth("login", "لم يكتمل إعداد قاعدة البيانات: شغّل ملف athar-supabase-setup.sql أولًا. (" + error.message + ")"); return; }
   localStorage.removeItem("athar-pending-name");
   me.staff = data;
@@ -1739,14 +1755,25 @@ function renderUser(){
 async function viewStaffAsync(){
   const v = $("#view");
   v.innerHTML = '<div class="panel empty">جارٍ التحميل…</div>';
-  const {data, error} = await sb.from("staff").select("*").order("created_at");
-  if(error){ v.innerHTML = `<div class="panel empty">${esc(dbError(error))}</div>`; return; }
+  const [{data, error}, tcr] = await Promise.all([sb.from("staff").select("*").order("created_at"), sb.from("teacher_classes").select("*")]);
+  if(error || tcr.error){ v.innerHTML = `<div class="panel empty">${esc(dbError(error || tcr.error))}</div>`; return; }
+  const tcs = tcr.data || [];
+  const classesHTML = x => x.role === "admin" ? '<div class="muted" style="font-size:13px;margin-top:4px">المسؤول يرى كل الصفوف.</div>' :
+    `<div style="display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin-top:6px"><span class="muted" style="font-size:13px">الصفوف:</span>
+      ${tcs.filter(c => c.user_id === x.user_id).map(c => `<span class="tag">${esc(classLabel(c))} <button type="button" class="x" style="all:unset;cursor:pointer;margin-inline-start:4px" aria-label="إزالة ${esc(classLabel(c))}" data-act="tc-del" data-id="${x.user_id}" data-g="${esc(c.grade)}" data-s="${esc(c.section)}">×</button></span>`).join("") || '<span class="tag due">لا يوجد؛ لا يرى أي طالب</span>'}
+      <select id="tcg-${x.user_id}" aria-label="الصف">${GRADES.map(g => `<option>${g}</option>`).join("")}</select>
+      <select id="tcs-${x.user_id}" aria-label="الشعبة"><option value="">كل الشعب</option>${SECTIONS.map(s => `<option value="${s}">شعبة ${s}</option>`).join("")}</select>
+      <button type="button" class="btn sm" data-act="tc-add" data-id="${x.user_id}">إضافة صف</button></div>`;
   const link = location.origin + location.pathname;
-  v.innerHTML = `<div class="hero"><div><h1>المعلمون والصلاحيات</h1><p class="lede">يسجّل المعلم حسابه من صفحة الدخول، ثم توافق عليه هنا.</p></div></div>
+  v.innerHTML = `<div class="hero"><div><h1>المعلمون والصلاحيات</h1><p class="lede">يسجّل المعلم حسابه بالبريد الوزاري ويفعّله من بريده، ثم توافق عليه هنا وتحدّد الصفوف التي يدرّسها. لا يرى المعلم إلا طلاب صفوفه.</p></div></div>
   <div class="panel" style="margin-bottom:14px">رابط النظام للمعلمين: <bdi dir="ltr" class="num">${esc(link)}</bdi><br>رابط بوابة الطلاب وأولياء الأمور: <bdi dir="ltr" class="num">${esc(link + "#portal")}</bdi></div>
-  <div class="panel"><ul class="list">${data.map(x => `<li><div class="avatar" aria-hidden="true">${esc(initials(x.name || x.email || "؟"))}</div><div class="grow"><div class="who">${esc(x.name || "—")} ${x.role === "admin" ? '<span class="tag">مسؤول</span>' : ""} ${x.approved ? '<span class="tag ok">معتمد</span>' : '<span class="tag due">بانتظار الموافقة</span>'}</div><div class="what" dir="ltr" style="text-align:right">${esc(x.email || "")}</div></div>
+  <div class="panel"><ul class="list">${data.map(x => `<li><div class="avatar" aria-hidden="true">${esc(initials(x.name || x.email || "؟"))}</div><div class="grow"><div class="who">${esc(x.name || "—")} ${x.role === "admin" ? '<span class="tag">مسؤول</span>' : ""} ${x.approved ? '<span class="tag ok">معتمد</span>' : '<span class="tag due">بانتظار الموافقة</span>'}</div><div class="what" dir="ltr" style="text-align:right">${esc(x.email || "")}</div>${classesHTML(x)}</div>
     ${x.user_id === me.user.id ? '<span class="muted">أنت</span>' : `<div style="display:flex;gap:6px;flex-wrap:wrap">${x.approved ? `<button class="btn sm" data-act="staff-set" data-id="${x.user_id}" data-f="approved" data-v="0">إيقاف</button>` : `<button class="btn sm primary" data-act="staff-set" data-id="${x.user_id}" data-f="approved" data-v="1">موافقة</button>`}
       ${x.role === "admin" ? `<button class="btn sm" data-act="staff-set" data-id="${x.user_id}" data-f="role" data-v="teacher">جعله معلمًا</button>` : `<button class="btn sm" data-act="staff-set" data-id="${x.user_id}" data-f="role" data-v="admin">جعله مسؤولًا</button>`}</div>`}</li>`).join("")}</ul></div>`;
+}
+async function tcChange(act, id, g, sec){
+  const r = act === "tc-add" ? await sb.from("teacher_classes").upsert({user_id:id, grade:g, section:sec}) : await sb.from("teacher_classes").delete().eq("user_id", id).eq("grade", g).eq("section", sec);
+  if(r.error) toast(dbError(r.error)); else { toast("حُفظ."); viewStaffAsync(); }
 }
 async function staffSet(id, f, v){
   const patch = f === "approved" ? {approved:v === "1"} : {role:v};
@@ -2137,6 +2164,8 @@ document.addEventListener("click", e => {
     case "auth-recheck": afterSignIn(); break;
     case "auth-forgot": { const em = ($("#aEmail") || {}).value; if(!em){ showAuth("login", "اكتب بريدك الإلكتروني أولًا ثم اضغط «نسيت كلمة المرور»."); break; } sb.auth.resetPasswordForEmail(em.trim(), {redirectTo:location.origin + location.pathname}).then(({error}) => toast(error ? authErr(error) : "أُرسل رابط تغيير كلمة المرور إلى بريدك.")); break; }
     case "staff-set": staffSet(t.dataset.id, t.dataset.f, t.dataset.v); break;
+    case "tc-add": tcChange("tc-add", t.dataset.id, document.getElementById("tcg-" + t.dataset.id).value, document.getElementById("tcs-" + t.dataset.id).value); break;
+    case "tc-del": tcChange("tc-del", t.dataset.id, t.dataset.g, t.dataset.s); break;
     case "new-pin": newPin(s, t); break;
     case "toggle-viol": s.portalViolations = t.checked; save(); break;
     case "ex-kind": ui.exDraft.kind = t.dataset.v; render(); break;
