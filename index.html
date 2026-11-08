@@ -1664,20 +1664,28 @@ function exportCSV(){
 }
 
 /* ---------- sign-in, staff approval, staff admin ---------- */
-const AUTH = { view:"login", msg:"", busy:false };
+const AUTH = { view:"login", msg:"", info:"", email:"", busy:false, otpReset:false };
 function shellMode(mode){ document.body.dataset.mode = mode; }
 function authHTML(){
   const v = AUTH.view;
-  const card = (title, inner) => `<div class="auth"><div class="auth-card panel"><h1>${title}</h1>${AUTH.msg ? `<div class="errbox" role="alert">${esc(AUTH.msg)}</div>` : ""}${inner}</div>
+  const card = (title, inner) => `<div class="auth"><div class="auth-card panel"><h1>${title}</h1>${AUTH.msg ? `<div class="errbox" role="alert">${esc(AUTH.msg)}</div>` : ""}${AUTH.info ? `<div class="preview" role="status" style="margin-bottom:10px">${esc(AUTH.info)}</div>` : ""}${inner}</div>
     <a class="auth-switch" href="#portal">أنا طالب أو ولي أمر ←</a></div>`;
   if(v === "pending") return card("بانتظار الموافقة", `<p>سُجّل حسابك <b dir="ltr">${esc(me.user && me.user.email || "")}</b>، وينتظر موافقة مسؤول النظام في المدرسة. بعد الموافقة أعد تحميل الصفحة.</p>
     <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn primary" data-act="auth-recheck">تحقّق مرة أخرى</button><button class="btn" data-act="logout">تسجيل الخروج</button></div>`);
+  const codeField = `<div class="field"><label for="aCode">رمز التحقق من البريد</label><input type="text" id="aCode" inputmode="numeric" autocomplete="one-time-code" dir="ltr" maxlength="10" required placeholder="123456"><span class="hint">أُرسل إلى <bdi dir="ltr">${esc(AUTH.email)}</bdi>. إن لم تجده فابحث في البريد غير الهام (Junk).</span></div>`;
+  if(v === "verify") return card("تفعيل الحساب", `<form id="fVerify" class="auth-form" novalidate>${codeField}
+    <button class="btn primary" type="submit" ${AUTH.busy ? "disabled" : ""}>تفعيل الحساب</button>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:space-between"><button type="button" class="btn ghost" data-act="auth-resend" data-v="signup">إرسال رمز جديد</button><button type="button" class="btn ghost" data-act="auth-view" data-v="login">رجوع لتسجيل الدخول</button></div></form>`);
+  if(v === "reset") return card("تغيير كلمة المرور", `<form id="fReset" class="auth-form" novalidate>${codeField}
+    <div class="field"><label for="aNewPw">كلمة المرور الجديدة</label><input type="password" id="aNewPw" autocomplete="new-password" minlength="8" required><span class="hint">8 أحرف على الأقل.</span></div>
+    <button class="btn primary" type="submit" ${AUTH.busy ? "disabled" : ""}>حفظ كلمة المرور</button>
+    <div style="display:flex;gap:6px;flex-wrap:wrap;justify-content:space-between"><button type="button" class="btn ghost" data-act="auth-resend" data-v="recovery">إرسال رمز جديد</button><button type="button" class="btn ghost" data-act="auth-view" data-v="login">رجوع لتسجيل الدخول</button></div></form>`);
   if(v === "recover") return card("كلمة مرور جديدة", `<form id="fRecover" class="auth-form" novalidate>
     <div class="field"><label for="aNewPw">كلمة المرور الجديدة</label><input type="password" id="aNewPw" autocomplete="new-password" minlength="8" required></div>
     <button class="btn primary" type="submit">حفظ كلمة المرور</button></form>`);
   if(v === "signup") return card("حساب معلم جديد", `<form id="fSignup" class="auth-form" novalidate>
     <div class="field"><label for="aName">الاسم كما يظهر في السجلات</label><input type="text" id="aName" required placeholder="مثال: أ. خالد سامح"></div>
-    <div class="field"><label for="aEmail">البريد الإلكتروني</label><input type="text" inputmode="email" dir="ltr" id="aEmail" autocomplete="email" required placeholder="name@${ALLOWED_DOMAIN}"><span class="hint">البريد الوزاري فقط. ستصلك رسالة تفعيل عليه.</span></div>
+    <div class="field"><label for="aEmail">البريد الإلكتروني</label><input type="text" inputmode="email" dir="ltr" id="aEmail" autocomplete="email" required placeholder="name@${ALLOWED_DOMAIN}"><span class="hint">البريد الوزاري فقط. سيصلك عليه رمز تفعيل.</span></div>
     <div class="field"><label for="aPw">كلمة المرور</label><input type="password" id="aPw" autocomplete="new-password" minlength="8" required><span class="hint">8 أحرف على الأقل.</span></div>
     <button class="btn primary" type="submit" ${AUTH.busy ? "disabled" : ""}>إنشاء الحساب</button>
     <p class="muted" style="font-size:13px;margin:0">أول حساب يُنشأ يصبح مسؤول النظام. الحسابات التالية تنتظر موافقته.</p>
@@ -1695,15 +1703,16 @@ function authErr(err){
   if(/email_domain_not_allowed|Database error saving new user/i.test(m)) return DOMAIN_MSG;
   if(/Invalid login credentials/i.test(m)) return "البريد أو كلمة المرور غير صحيحة.";
   if(/Email not confirmed/i.test(m)) return "فعّل حسابك من الرسالة التي وصلت إلى بريدك أولًا.";
+  if(/expired|invalid.*(otp|token)|otp.*(expired|invalid)|Token has expired/i.test(m)) return "الرمز غير صحيح أو انتهت صلاحيته. اطلب رمزًا جديدًا.";
   if(/already registered/i.test(m)) return "هذا البريد مسجّل بالفعل. سجّل الدخول.";
   if(/Password should be/i.test(m)) return "كلمة المرور قصيرة؛ استخدم 8 أحرف على الأقل.";
   if(/rate limit/i.test(m)) return "محاولات كثيرة. انتظر قليلًا ثم حاول.";
   if(/Failed to fetch/i.test(m)) return "لا يوجد اتصال بالإنترنت أو إعداد الرابط غير صحيح.";
   return m || "حدث خطأ غير متوقع.";
 }
-function showAuth(view, msg){ AUTH.view = view || AUTH.view; AUTH.msg = msg || ""; shellMode("auth"); $("#view").innerHTML = authHTML(); const f = $("#view input"); if(f) f.focus(); }
+function showAuth(view, msg, info){ AUTH.view = view || AUTH.view; AUTH.msg = msg || ""; AUTH.info = info || ""; shellMode("auth"); $("#view").innerHTML = authHTML(); const f = $("#view input"); if(f) f.focus(); }
 document.addEventListener("submit", async e => {
-  const id = e.target.id; if(!["fLogin","fSignup","fRecover"].includes(id)) return;
+  const id = e.target.id; if(!["fLogin","fSignup","fRecover","fVerify","fReset"].includes(id)) return;
   e.preventDefault(); if(AUTH.busy) return;
   const val = x => (($("#" + x) || {}).value || "").trim();
   AUTH.busy = true; AUTH.msg = "";
@@ -1711,6 +1720,7 @@ document.addEventListener("submit", async e => {
     if(id === "fLogin"){
       if(!val("aEmail") || !val("aPw")) throw {message:"اكتب البريد وكلمة المرور."};
       const {error} = await sb.auth.signInWithPassword({email:val("aEmail"), password:$("#aPw").value});
+      if(error && /Email not confirmed/i.test(error.message || "")){ AUTH.busy = false; AUTH.email = val("aEmail"); showAuth("verify", "", "حسابك غير مفعّل بعد. اكتب الرمز الذي وصلك على بريدك، أو اطلب رمزًا جديدًا."); return; }
       if(error) throw error;
       AUTH.busy = false; await afterSignIn();
     } else if(id === "fSignup"){
@@ -1720,8 +1730,19 @@ document.addEventListener("submit", async e => {
       const {data, error} = await sb.auth.signUp({email:val("aEmail"), password:$("#aPw").value, options:{data:{name:val("aName")}, emailRedirectTo:location.origin + location.pathname}});
       if(error) throw error;
       AUTH.busy = false;
-      if(!data.session){ showAuth("login"); AUTH.msg = ""; $("#view .auth-card h1").insertAdjacentHTML("afterend", '<div class="preview" role="status" style="margin-bottom:10px">أُرسلت رسالة تفعيل إلى بريدك. افتحها ثم سجّل الدخول هنا.</div>'); return; }
+      if(!data.session){ AUTH.email = val("aEmail"); showAuth("verify", "", "أرسلنا رمز تفعيل إلى بريدك الوزاري. اكتبه هنا لتفعيل حسابك."); return; }
       await afterSignIn();
+    } else if(id === "fVerify"){
+      const code = val("aCode").replace(/\s/g, ""); if(!code) throw {message:"اكتب الرمز الذي وصلك على البريد."};
+      const {error} = await sb.auth.verifyOtp({email:AUTH.email, token:code, type:"signup"}); if(error) throw error;
+      AUTH.busy = false; AUTH.info = ""; await afterSignIn();
+    } else if(id === "fReset"){
+      const code = val("aCode").replace(/\s/g, ""), pw = $("#aNewPw").value;
+      if(!code) throw {message:"اكتب الرمز الذي وصلك على البريد."}; if(pw.length < 8) throw {message:"كلمة المرور 8 أحرف على الأقل."};
+      AUTH.otpReset = true;
+      const r1 = await sb.auth.verifyOtp({email:AUTH.email, token:code, type:"recovery"}); if(r1.error){ AUTH.otpReset = false; throw r1.error; }
+      const r2 = await sb.auth.updateUser({password:pw}); AUTH.otpReset = false; if(r2.error) throw r2.error;
+      AUTH.busy = false; AUTH.view = "login"; toast("حُفظت كلمة المرور الجديدة."); await afterSignIn();
     } else if(id === "fRecover"){
       const pw = $("#aNewPw").value; if(pw.length < 8) throw {message:"8 أحرف على الأقل."};
       const {error} = await sb.auth.updateUser({password:pw}); if(error) throw error;
@@ -2162,7 +2183,8 @@ document.addEventListener("click", e => {
     case "logout": sb.auth.signOut().then(() => { me.user = null; me.staff = null; state = {students:[]}; snap = new Map(); renderUser(); showAuth("login"); }); break;
     case "auth-view": showAuth(t.dataset.v); break;
     case "auth-recheck": afterSignIn(); break;
-    case "auth-forgot": { const em = ($("#aEmail") || {}).value; if(!em){ showAuth("login", "اكتب بريدك الإلكتروني أولًا ثم اضغط «نسيت كلمة المرور»."); break; } sb.auth.resetPasswordForEmail(em.trim(), {redirectTo:location.origin + location.pathname}).then(({error}) => toast(error ? authErr(error) : "أُرسل رابط تغيير كلمة المرور إلى بريدك.")); break; }
+    case "auth-forgot": { const em = ($("#aEmail") || {}).value; if(!em){ showAuth("login", "اكتب بريدك الإلكتروني أولًا ثم اضغط «نسيت كلمة المرور»."); break; } sb.auth.resetPasswordForEmail(em.trim(), {redirectTo:location.origin + location.pathname}).then(({error}) => { if(error){ showAuth("login", authErr(error)); return; } AUTH.email = em.trim(); showAuth("reset", "", "أرسلنا رمزًا إلى بريدك. اكتبه هنا مع كلمة المرور الجديدة."); }); break; }
+    case "auth-resend": { if(!AUTH.email){ showAuth("login"); break; } const p = t.dataset.v === "recovery" ? sb.auth.resetPasswordForEmail(AUTH.email, {redirectTo:location.origin + location.pathname}) : sb.auth.resend({type:"signup", email:AUTH.email, options:{emailRedirectTo:location.origin + location.pathname}}); p.then(({error}) => error ? showAuth(null, authErr(error)) : showAuth(null, "", "أُرسل رمز جديد. استخدم أحدث رسالة فقط.")); break; }
     case "staff-set": staffSet(t.dataset.id, t.dataset.f, t.dataset.v); break;
     case "tc-add": tcChange("tc-add", t.dataset.id, document.getElementById("tcg-" + t.dataset.id).value, document.getElementById("tcs-" + t.dataset.id).value); break;
     case "tc-del": tcChange("tc-del", t.dataset.id, t.dataset.g, t.dataset.s); break;
@@ -2257,7 +2279,7 @@ Object.assign(ui, parseHash());
   if(!CONFIG.url || !CONFIG.anonKey || /YOUR-/.test(CONFIG.url + CONFIG.anonKey)){ shellMode("auth"); v.innerHTML = '<div class="auth"><div class="auth-card panel"><h1>النظام غير مُعَدّ بعد</h1><p>افتح ملف index.html، وضع رابط مشروع Supabase والمفتاح العام في قسم <b dir="ltr">ATHAR_CONFIG</b> أعلى الملف، ثم ارفعه من جديد.</p></div></div>'; return; }
   if(!window.supabase || !window.supabase.createClient){ shellMode("auth"); v.innerHTML = '<div class="auth"><div class="auth-card panel"><h1>تعذّر التحميل</h1><p>لم تُحمَّل مكتبة الاتصال. تحقّق من الإنترنت ثم أعد تحميل الصفحة.</p><button class="btn" onclick="location.reload()">إعادة التحميل</button></div></div>'; return; }
   sb = window.supabase.createClient(CONFIG.url, CONFIG.anonKey, {auth:{persistSession:true, autoRefreshToken:true, detectSessionInUrl:true}});
-  sb.auth.onAuthStateChange(ev => { if(ev === "PASSWORD_RECOVERY"){ AUTH.view = "recover"; if(!isPortalRoute(ui.route)) showAuth("recover"); } });
+  sb.auth.onAuthStateChange(ev => { if(ev === "PASSWORD_RECOVERY" && !AUTH.otpReset){ AUTH.view = "recover"; if(!isPortalRoute(ui.route)) showAuth("recover"); } });
   if(isPortalRoute(ui.route)){ render(); return; }
   const {data:{session}} = await sb.auth.getSession();
   if(AUTH.view === "recover") return;
