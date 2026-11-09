@@ -455,6 +455,11 @@ img.avatar{object-fit:cover;background:var(--surface-2)}
 .ch-hero h1{color:var(--ch);font-size:32px;margin:4px 0 6px}
 @media (prefers-color-scheme:dark){.charter{--ch:#E58A8A}}
 .ch-kicker{font-size:13px;color:var(--muted);font-weight:600}
+.home-ch{display:block;position:relative;border-radius:var(--r-lg);overflow:hidden;margin-bottom:12px;background:var(--surface-2);border:1px solid var(--line);text-decoration:none}
+.home-ch img{display:block;width:100%;height:auto;max-height:360px;object-fit:cover}
+.home-ch span{position:absolute;inset-inline:0;bottom:0;padding:22px 14px 10px;color:#fff;font-weight:700;font-size:15px;background:linear-gradient(transparent,rgba(0,0,0,.65))}
+.home-ch-empty{display:block;margin-bottom:12px;color:var(--muted);font-size:13.5px;text-decoration:none;border-style:dashed}
+.tt-off{background:var(--surface-2);text-align:center}
 .ch-gal{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
 .ch-gal figure{margin:0;position:relative;border-radius:var(--r-lg);overflow:hidden;background:var(--surface-2);border:1px solid var(--line)}
 .ch-gal img{display:block;width:100%;height:auto;max-height:420px;object-fit:cover}
@@ -992,7 +997,7 @@ function render(){
     if(ui.exDraft && ui.exDraft._for === ui.exid) v.innerHTML = viewExamEdit();
     else { v.innerHTML = '<div class="panel empty">جارٍ التحميل…</div>'; loadExamDraft(ui.exid, tok).then(ok => { if(tok !== renderTok) return; if(ok) v.innerHTML = viewExamEdit(); else if(ok === null) v.innerHTML = '<div class="panel empty"><p>لم يُعثر على الامتحان.</p><a class="btn" href="#exams">الامتحانات</a></div>'; }).catch(err => { v.innerHTML = `<div class="panel empty">${esc(dbError(err))}</div>`; }); }
   }
-  else v.innerHTML = viewHome();
+  else { v.innerHTML = viewHome(); loadHomeCharter(tok); }
   const navKey = ui.route === "student" || ui.route === "perf" ? "students" : ui.route === "report" ? "reports" : (ui.route === "exam" || ui.route === "results") ? "exams" : ui.route === "event" ? "events" : ui.route === "dailyp" ? "daily" : ui.route;
   hydrateMedia();
   $$("[data-nav]").forEach(a => a.setAttribute("aria-current", a.dataset.nav === navKey ? "page" : "false"));
@@ -1033,6 +1038,7 @@ function viewHome(){
   recent.sort((a,b) => sortDesc(a.f,b.f));
   const absToday = state.students.filter(s => (s.attendance || []).some(a => a.date === today() && (a.status === "excused" || a.status === "unexcused"))).length;
   return `${noClassesNote()}
+  <div id="homeCh"></div>
   <a class="charter-band" href="#charter"><img src="${CHARTER_IMG}" alt="الميثاق الوطني للتعليم"><div><small>الميثاق الوطني للتعليم</small><b>«${CHARTER_SLOGAN}»</b></div></a>
   <div class="hero">
     <div>
@@ -2687,9 +2693,11 @@ async function deleteEvent(btn){
 }
 
 /* ---------- my settings, timetable, schedule files ---------- */
-const WEEKDAYS = ["الأحد","الاثنين","الثلاثاء","الأربعاء","الخميس"];
+const WEEKDAYS = [[1,"الاثنين"],[2,"الثلاثاء"],[3,"الأربعاء"],[4,"الخميس"],[5,"الجمعة"]];
+const FRI_PERIODS = 4;
+const dayPeriods = d => Number(d) === 5 ? FRI_PERIODS : PERIOD_NAMES.length;
 const PERIOD_NAMES = ["الأولى","الثانية","الثالثة","الرابعة","الخامسة","السادسة","السابعة","الثامنة"];
-const DEF_TIMES = ["7:25-8:10","8:15-9:00","9:05-9:50","10:10-10:55","11:00-11:45","11:45-12:30","12:45-13:30","13:30-14:15"];
+const DEF_TIMES = ["7:25-8:05","8:10-8:50","8:55-9:35","9:55-10:35","10:40-11:20","11:25-12:05","12:20-13:00","13:05-13:45"];
 const SERVICES = ["متابعة دمج","تدريس فردي","تدريس جمعي","مهام إدارية","تحضير وتخطيط","حصة فراغ","أخرى"];
 const LOG_STATUS = ["تم","تم التعديل","لم يتم","—"];
 const my = { loaded:false, timetable:{}, periods:null, prefs:{} };
@@ -2715,7 +2723,7 @@ async function viewScheduleAsync(tok){
     ${fl.data && fl.data.length ? `<div class="gallery">${fl.data.map(f => `<figure>${fileThumbHTML(f)}<figcaption><span class="ellip">${esc(f.name || "")}</span><button class="btn sm ghost" style="color:var(--bad)" data-act="sch-del" data-id="${f.id}">حذف</button></figcaption></figure>`).join("")}</div>` : '<div class="empty">لم تُرفع ملفات بعد.</div>'}</section>
   <section class="panel" style="margin-bottom:14px"><h2>الجدول الأسبوعي</h2><p class="muted" style="font-size:13px;margin-top:-4px">اضغط أي خانة لتعبئتها. يُستخدم لتعبئة التوثيق اليومي تلقائيًا.</p>
     <div class="tbl-wrap"><table class="tt"><thead><tr><th>اليوم</th>${PERIOD_NAMES.map((n, i) => `<th>${n}<div class="muted num" style="font-weight:500;font-size:11.5px">${esc(T[i])}</div></th>`).join("")}</tr></thead><tbody>
-    ${WEEKDAYS.map((d, di) => `<tr><th>${d}</th>${PERIOD_NAMES.map((n, pi) => { const c = (my.timetable[di] || {})[pi]; return `<td><button class="ttc${c && c.service ? " on" : ""}" data-act="tt-cell" data-d="${di}" data-p="${pi}">${c && c.service ? `<b>${esc(c.service)}</b>${c.subject ? "<span>" + esc(c.subject) + (c.cls ? " " + esc(c.cls) : "") + "</span>" : ""}${c.sids && c.sids.length ? `<span class="muted">${c.sids.length} طالب</span>` : ""}` : '<span class="muted">+</span>'}</button></td>`; }).join("")}</tr>`).join("")}
+    ${WEEKDAYS.map(([di, d]) => `<tr><th>${d}</th>${PERIOD_NAMES.map((n, pi) => { if(pi >= dayPeriods(di)) return '<td class="tt-off"><span class="muted">—</span></td>'; const c = (my.timetable[di] || {})[pi]; return `<td><button class="ttc${c && c.service ? " on" : ""}" data-act="tt-cell" data-d="${di}" data-p="${pi}">${c && c.service ? `<b>${esc(c.service)}</b>${c.subject ? "<span>" + esc(c.subject) + (c.cls ? " " + esc(c.cls) : "") + "</span>" : ""}${c.sids && c.sids.length ? `<span class="muted">${c.sids.length} طالب</span>` : ""}` : '<span class="muted">+</span>'}</button></td>`; }).join("")}</tr>`).join("")}
     </tbody></table></div></section>
   <section class="panel"><h2>إعدادات التقرير اليومي</h2><form id="fPrefs" class="modal-b" style="padding:0" novalidate>
     ${[["semester","الفصل الدراسي"],["myName","اسمك كما يظهر في التوقيع"],["myTitle","مسمّاك الوظيفي"],["headName","اسم المعتمِد"],["headTitle","مسمّى المعتمِد"],["school","اسم المدرسة في الترويسة"],["sector","القطاع"]].map(([k, l]) => `<div class="field"><label for="pf_${k}">${l}</label><input type="text" id="pf_${k}" name="${k}" value="${esc(P[k])}"></div>`).join("")}
@@ -2730,7 +2738,7 @@ function studentPickerHTML(sel){
 function openCellForm(di, pi){
   const c = (my.timetable[di] || {})[pi] || {};
   openForm({
-    title:WEEKDAYS[di] + " · الحصة " + PERIOD_NAMES[pi], submitLabel:"حفظ",
+    title:DAYS_AR[di] + " · الحصة " + PERIOD_NAMES[pi], submitLabel:"حفظ",
     fields:[{name:"service", label:"نوع الخدمة", type:"select", options:[["","— فارغة —"]].concat(SERVICES)}, {name:"partner", label:"مع المعلم", placeholder:"مثال: أستاذ أحمد"},
       {name:"subject", label:"المادة", type:"combo", options:SUBJECTS}, {name:"cls", label:"الصف والشعبة", placeholder:"مثال: 11G3"}],
     values:{service:c.service || "", partner:c.partner || "", subject:c.subject || "", cls:c.cls || ""},
@@ -2763,7 +2771,7 @@ const dayName = d => DAYS_AR[new Date(d + "T12:00:00").getDay()];
 const blankPeriod = () => ({service:"", partner:"", subject:"", cls:"", sids:[], others:"", status:"", notes:""});
 function fromTimetable(date){
   const di = new Date(date + "T12:00:00").getDay(); const row = my.timetable[di] || {};
-  return PERIOD_NAMES.map((n, i) => { const c = row[i]; return c ? Object.assign(blankPeriod(), {service:c.service, partner:c.partner || "", subject:c.subject || "", cls:c.cls || "", sids:(c.sids || []).filter(id => stu(id)), status:""}) : blankPeriod(); });
+  return PERIOD_NAMES.map((n, i) => { const c = i < dayPeriods(di) ? row[i] : null; return c ? Object.assign(blankPeriod(), {service:c.service, partner:c.partner || "", subject:c.subject || "", cls:c.cls || "", sids:(c.sids || []).filter(id => stu(id)), status:""}) : blankPeriod(); });
 }
 async function viewDailyAsync(date, tok){
   const v = $("#view"); v.innerHTML = '<div class="panel empty">جارٍ التحميل…</div>';
@@ -2789,7 +2797,7 @@ function dailyHTML(){
       <button class="btn" data-act="dl-fill">تعبئة من جدولي</button>
       <a class="btn primary" href="#dailyp-${D.date}">${ICON.print}التقرير اليومي (طباعة / PowerPoint)</a></div></div>
   ${D.prefilled ? '<div class="preview" style="margin-bottom:12px">عُبّئت الحصص من جدولك الأسبوعي. راجعها وحدّد الحالة، وتُحفظ تلقائيًا عند أول تعديل.</div>' : ""}
-  <div class="dlgrid">${D.periods.map((p, i) => `<section class="panel dlp${p.service ? "" : " empty-p"}"><div class="dlp-h"><b>الحصة ${PERIOD_NAMES[i]}</b><span class="muted num">${esc(T[i])}</span></div>
+  <div class="dlgrid">${D.periods.map((p, i) => i >= dayPeriods(new Date(D.date + "T12:00:00").getDay()) ? "" : `<section class="panel dlp${p.service ? "" : " empty-p"}"><div class="dlp-h"><b>الحصة ${PERIOD_NAMES[i]}</b><span class="muted num">${esc(T[i])}</span></div>
     <div class="dlp-b">
       <div class="field"><label for="dl${i}s">نوع الخدمة</label><select id="dl${i}s" data-dl="service" data-p="${i}"><option value="">—</option>${SERVICES.map(x => `<option ${p.service === x ? "selected" : ""}>${esc(x)}</option>`).join("")}</select></div>
       <div class="field"><label for="dl${i}pt">مع المعلم</label><input type="text" id="dl${i}pt" data-dl="partner" data-p="${i}" value="${esc(p.partner)}" placeholder="مثال: أستاذ أحمد"></div>
@@ -2974,6 +2982,14 @@ const CHARTER = {
     ["قطاع العمل","برامج مهارات مهنية مرتبطة بسوق العمل"],["أولياء الأمور","أدلة وبرامج توعوية لتعزيز القيم في المنزل"]]
 };
 let charterCfg = null;
+async function loadHomeCharter(tok){
+  const box = $("#homeCh"); if(!box) return;
+  const {data} = await sb.from("app_settings").select("value").eq("key", "charter").maybeSingle();
+  if(tok !== renderTok || !$("#homeCh")) return;
+  const ph = data && data.value && (data.value.photos || [])[0];
+  if(ph){ $("#homeCh").innerHTML = `<a class="home-ch" href="#charter"><img data-path="${esc(ph.path)}" alt="${esc(ph.caption || "توقيع الميثاق الوطني للتعليم")}"><span>${esc(ph.caption || "توقيع الميثاق الوطني للتعليم")}</span></a>`; hydrateMedia(); }
+  else if(me.staff && me.staff.role === "admin") $("#homeCh").innerHTML = '<a class="panel home-ch-empty" href="#charter">أضف صورة توقيع الميثاق من صفحة «الميثاق» لتظهر هنا في بداية المنصة.</a>';
+}
 async function viewCharterAsync(tok){
   const v = $("#view"); v.innerHTML = '<div class="panel empty">جارٍ التحميل…</div>';
   const {data} = await sb.from("app_settings").select("value").eq("key", "charter").maybeSingle();
