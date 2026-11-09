@@ -3102,7 +3102,6 @@ async function loadHomeCharter(tok){
   if(tok !== renderTok || !$("#homeCh")) return;
   const ph = data && data.value && (data.value.photos || [])[0];
   if(ph){ $("#homeCh").innerHTML = `<a class="home-ch" href="#charter"><img data-path="${esc(ph.path)}" alt="${esc(ph.caption || "توقيع الميثاق الوطني للتعليم")}"><span>${esc(ph.caption || "توقيع الميثاق الوطني للتعليم")}</span></a>`; hydrateMedia(); }
-  else if(me.staff && me.staff.role === "admin") $("#homeCh").innerHTML = '<a class="panel home-ch-empty" href="#charter">أضف صورة توقيع الميثاق من صفحة «الميثاق» لتظهر هنا في بداية المنصة.</a>';
 }
 async function viewCharterAsync(tok){
   const v = $("#view"); v.innerHTML = '<div class="panel empty">جارٍ التحميل…</div>';
@@ -3115,7 +3114,7 @@ async function viewCharterAsync(tok){
     <p>نحو تعليم يرسّخ الهوية الوطنية، ويبني السمات الشخصية والمهارات لدى كل متعلم.</p></div>
   <section class="ch-photos">
     ${charterCfg.photos.length ? `<div class="ch-gal">${charterCfg.photos.map((ph, i) => `<figure><img data-path="${esc(ph.path)}" alt="${esc(ph.caption || "صورة من إطلاق الميثاق الوطني للتعليم")}">${ph.caption ? `<figcaption>${esc(ph.caption)}</figcaption>` : ""}${admin ? `<button class="btn sm ch-del" data-act="ch-del" data-i="${i}">حذف</button>` : ""}</figure>`).join("")}</div>`
-      : `<div class="panel empty">${admin ? "أضف صور توقيع الميثاق من الدليل التعريفي (لقطة شاشة من ملف PDF تكفي)." : "لم تُضف صور بعد."}</div>`}
+      : ""}
     ${admin ? `<div style="margin-top:10px"><label class="btn sm primary" for="chUp">${ICON.plus}إضافة صورة</label><input type="file" id="chUp" class="sr" accept="image/*"></div>` : ""}
   </section>
   <section class="panel ch-about"><h2>نبذة عن الميثاق</h2>
